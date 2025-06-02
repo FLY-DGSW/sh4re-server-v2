@@ -1,6 +1,8 @@
 package sh4re_v2.sh4re_v2.security.Jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,9 +12,14 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
+import sh4re_v2.sh4re_v2.exception.ApiResponseError;
+import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
+import sh4re_v2.sh4re_v2.exception.error_code.ErrorCode;
+import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
 
 @Slf4j
 @Component
@@ -24,17 +31,35 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response,
       AuthenticationException authException) throws IOException, ServletException {
-    log.error("Unauthorized error: {}", authException.getMessage());
+//    log.error("Unauthorized error: {}", authException.getMessage());
 
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-    Map<String, Object> body = new HashMap<>();
-    body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-    body.put("error", "Unauthorized");
-    body.put("message", authException.getMessage());
-    body.put("path", request.getServletPath());
+    // Get the original exception from the request if available
+    Throwable exception = (Throwable) request.getAttribute("exception");
+    if (exception == null) {
+      exception = authException.getCause();
+    }
 
-    objectMapper.writeValue(response.getOutputStream(), body);
+    ErrorCode errorCode;
+
+    if (exception instanceof BusinessException) {
+      errorCode = ((BusinessException) exception).getErrorCode();
+    } else if (exception instanceof JwtException
+        || authException instanceof BadCredentialsException) {
+      errorCode = AuthErrorCode.INVALID_JWT;
+    } else {
+      errorCode = AuthErrorCode.AUTHENTICATION_FAILED;
+    }
+
+//    if (exception != null) {
+//      log.error("Authentication failed: {}", exception.getMessage());
+//    }
+
+    BusinessException authException2 = new BusinessException(errorCode, exception);
+    ApiResponseError errorResponse = ApiResponseError.of(authException2);
+
+    objectMapper.writeValue(response.getOutputStream(), errorResponse);
   }
 }

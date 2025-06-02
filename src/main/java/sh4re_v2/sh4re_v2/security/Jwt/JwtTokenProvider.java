@@ -130,10 +130,8 @@ public class JwtTokenProvider {
           .parseClaimsJws(token);
       return TokenStatus.AUTHENTICATED;
     } catch (ExpiredJwtException e) {
-      log.error("Expired JWT token: {}", e.getMessage());
       return TokenStatus.EXPIRED;
     } catch (UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
-      log.error("Invalid JWT token: {}", e.getMessage());
       return TokenStatus.INVALID;
     }
   }

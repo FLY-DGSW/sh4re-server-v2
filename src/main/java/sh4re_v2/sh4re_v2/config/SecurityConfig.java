@@ -25,6 +25,7 @@ public class SecurityConfig {
 
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final SecurityPathConfig securityPathConfig;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,12 +37,23 @@ public class SecurityConfig {
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers("/api/test/public").permitAll()
-            .requestMatchers("/h2-console/**").permitAll()
-            .anyRequest().authenticated()
-        );
+        .authorizeHttpRequests(authorize -> {
+          securityPathConfig.getAuthenticatedEndpoints().forEach(endpoint -> {
+            if (endpoint.getMethod() != null) {
+              authorize.requestMatchers(endpoint.getMethod(), endpoint.getPattern()).authenticated();
+            } else {
+              authorize.requestMatchers(endpoint.getPattern()).authenticated();
+            }
+          });
+          securityPathConfig.getPublicEndpoints().forEach(endpoint -> {
+            if (endpoint.getMethod() != null) {
+              authorize.requestMatchers(endpoint.getMethod(), endpoint.getPattern()).permitAll();
+            } else {
+              authorize.requestMatchers(endpoint.getPattern()).permitAll();
+            }
+          });
+          authorize.anyRequest().authenticated();
+        });
 
     // Add JWT filter
     http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

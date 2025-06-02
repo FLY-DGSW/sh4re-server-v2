@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sh4re_v2.sh4re_v2.domain.UserRefreshToken;
+import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
 import sh4re_v2.sh4re_v2.repository.RefreshTokenRepository;
 
 @Service
@@ -42,6 +43,10 @@ public class RefreshTokenService {
   }
 
   public void deleteByUsername(String username) {
-    refreshTokenRepository.deleteByUsername(username);
+    Optional<UserRefreshToken> tokenOpt = refreshTokenRepository.findByUsername(username);
+    if(tokenOpt.isEmpty()) throw AuthErrorCode.ALREADY_LOGGED_OUT_USER.defaultException();
+    else {
+      refreshTokenRepository.deleteByUsername(username);
+    }
   }
 }
