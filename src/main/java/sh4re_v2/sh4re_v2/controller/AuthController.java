@@ -16,6 +16,8 @@ import sh4re_v2.sh4re_v2.domain.User;
 import sh4re_v2.sh4re_v2.dto.login.LoginReq;
 import sh4re_v2.sh4re_v2.dto.login.LoginRes;
 import sh4re_v2.sh4re_v2.dto.register.RegisterReq;
+import sh4re_v2.sh4re_v2.dto.register.RegisterRes;
+import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
 import sh4re_v2.sh4re_v2.security.Jwt.JwtTokenProvider;
 import sh4re_v2.sh4re_v2.security.UserPrincipal;
 import sh4re_v2.sh4re_v2.service.AuthService;
@@ -28,8 +30,6 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
 
     @PostMapping("/login")
@@ -38,24 +38,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterReq registerRequest) {
-        // Check if username already exists
-        if (userService.findByUsername(registerRequest.username()).isPresent()) {
-            return ResponseEntity.badRequest().body("Username is already taken");
-        }
-
-        // Create new user
-        User user = new User();
-        user.setUsername(registerRequest.username());
-        user.setPassword(passwordEncoder.encode(registerRequest.password()));
-        user.setEmail(registerRequest.email());
-        user.setName(registerRequest.name());
-        user.setGrade(registerRequest.grade());
-        user.setClassNo(registerRequest.classNo());
-        user.setStudentNo(registerRequest.studentNo());
-
-        userService.save(user);
-
-        return ResponseEntity.ok("User registered successfully");
+    public RegisterRes registerUser(@Valid @RequestBody RegisterReq registerRequest) {
+        return authService.registerUser(registerRequest);
     }
 }

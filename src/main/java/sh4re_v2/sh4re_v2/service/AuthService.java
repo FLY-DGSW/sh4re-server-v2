@@ -9,10 +9,13 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sh4re_v2.sh4re_v2.domain.User;
 import sh4re_v2.sh4re_v2.dto.login.LoginReq;
 import sh4re_v2.sh4re_v2.dto.login.LoginRes;
+import sh4re_v2.sh4re_v2.dto.register.RegisterReq;
+import sh4re_v2.sh4re_v2.dto.register.RegisterRes;
 import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
 import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
 import sh4re_v2.sh4re_v2.security.Jwt.JwtTokenProvider;
@@ -23,7 +26,9 @@ import sh4re_v2.sh4re_v2.security.UserPrincipal;
 @RequiredArgsConstructor
 public class AuthService {
   private final AuthenticationManager authenticationManager;
+  private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
+  private final UserService userService;
 
   public LoginRes login(LoginReq loginReq) {
     try {
@@ -59,5 +64,29 @@ public class AuthService {
       // 기타 예외 처리
       throw new BusinessException(AuthErrorCode.AUTHENTICATION_FAILED, "인증에 실패했습니다: " + e.getMessage());
     }
+  }
+
+  public RegisterRes registerUser(RegisterReq registerReq) {
+    // Check if username already exists
+    if (userService.findByUsername(registerReq.username()).isPresent()) {
+      throw AuthErrorCode.ALREADY_EXISTS_USERNAME.defaultException();
+    }
+
+    // Create new user
+    String encodedPassword = passwordEncoder.encode(registerReq.password());
+
+    User user = new User(
+        registerReq.username(),
+        encodedPassword,
+        registerReq.email(),
+        registerReq.name(),
+        registerReq.grade(),
+        registerReq.classNo(),
+        registerReq.studentNo()
+    );
+
+    userService.save(user);
+
+    return new RegisterRes(user.getId());
   }
 }

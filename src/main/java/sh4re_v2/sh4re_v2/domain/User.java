@@ -38,4 +38,15 @@ public class User extends Base {
   private Role role = Role.USER; // Default role
 
 //  School school
+
+  public User(String username, String password, String email, String name, int grade, int classNo, int studentNo) {
+    this.username = username;
+    this.password = password;
+    this.email = email;
+    this.name = name;
+    this.grade = grade;
+    this.classNo = classNo;
+    this.studentNo = studentNo;
+  }
+
 }

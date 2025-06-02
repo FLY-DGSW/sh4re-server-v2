@@ -28,7 +28,7 @@ public class GlobalResponseWrapper implements ResponseBodyAdvice<Object> {
     if (body instanceof BaseRes<?>) {
       return body; // 이미 감싸진 경우 pass
     }
-    if(body instanceof ErrorResponse) {
+    if(body instanceof ErrorResponse || body instanceof ApiResponseError) {
       return new BaseRes<>(false, "에러가 발생했습니다.", body);
     }
     return new BaseRes<>(true, "성공", body);
