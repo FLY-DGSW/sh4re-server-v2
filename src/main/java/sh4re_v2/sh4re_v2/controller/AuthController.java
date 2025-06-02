@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import sh4re_v2.sh4re_v2.domain.User;
 import sh4re_v2.sh4re_v2.dto.login.LoginReq;
 import sh4re_v2.sh4re_v2.dto.login.LoginRes;
+import sh4re_v2.sh4re_v2.dto.logout.LogOutRes;
 import sh4re_v2.sh4re_v2.dto.refreshToken.RefreshTokenRes;
 import sh4re_v2.sh4re_v2.dto.register.RegisterReq;
 import sh4re_v2.sh4re_v2.dto.register.RegisterRes;
@@ -50,5 +51,10 @@ public class AuthController {
     @PostMapping("/refresh")
     public RefreshTokenRes refreshToken(HttpServletRequest request, HttpServletResponse response) {
         return authService.refreshToken(request, response);
+    }
+
+    @PostMapping("/logout")
+    public LogOutRes logout(@AuthenticationPrincipal UserDetails userDetails) {
+        return authService.logout(userDetails);
     }
 }

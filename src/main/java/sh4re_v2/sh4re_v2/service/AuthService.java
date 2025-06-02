@@ -14,11 +14,13 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sh4re_v2.sh4re_v2.domain.User;
 import sh4re_v2.sh4re_v2.dto.login.LoginReq;
 import sh4re_v2.sh4re_v2.dto.login.LoginRes;
+import sh4re_v2.sh4re_v2.dto.logout.LogOutRes;
 import sh4re_v2.sh4re_v2.dto.refreshToken.RefreshTokenRes;
 import sh4re_v2.sh4re_v2.dto.register.RegisterReq;
 import sh4re_v2.sh4re_v2.dto.register.RegisterRes;
@@ -148,5 +150,10 @@ public class AuthService {
     response.addCookie(createCookie("refreshToken", newRefreshToken, true));
 
     return new RefreshTokenRes(newAccessToken);
+  }
+
+  public LogOutRes logout(UserDetails userDetails) {
+    refreshTokenService.deleteByUsername(userDetails.getUsername());
+    return new LogOutRes();
   }
 }
