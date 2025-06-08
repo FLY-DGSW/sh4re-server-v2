@@ -37,26 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
     String token = getJwtFromRequest(request);
 
-    if(token != null) {
-      return false;
-    }
-
-    String path = request.getRequestURI();
-    String method = request.getMethod();
-
-    AntPathMatcher pathMatcher = new AntPathMatcher();
-    boolean result = securityPathConfig.getAuthenticatedEndpoints().stream()
-        .anyMatch(endpoint ->
-            pathMatcher.match(endpoint.getPattern(), path) &&
-                (endpoint.getMethod() == null || endpoint.getMethod().name().equals(method)));
-    if(result) return false;
-    else {
-      return securityPathConfig.getPublicEndpoints().stream()
-          .anyMatch(endpoint ->
-              pathMatcher.match(endpoint.getPattern(), path) &&
-                  (endpoint.getMethod() == null || endpoint.getMethod().name().equals(method))
-          );
-    }
+    return token == null;
   }
 
   @Override

@@ -1,5 +1,6 @@
 package sh4re_v2.sh4re_v2.exception;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.time.Instant;
@@ -20,10 +21,13 @@ import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
 @Builder
 public record ApiResponseError(
     String code,
+    @JsonIgnore
     Integer status,
+    @JsonIgnore
     String name,
     String message,
     @JsonInclude(Include.NON_EMPTY) List<ApiSimpleError> cause,
+    @JsonIgnore
     Instant timestamp
 ) {
   public static ApiResponseError of(BusinessException exception) {

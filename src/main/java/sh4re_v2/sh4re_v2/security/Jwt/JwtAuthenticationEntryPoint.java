@@ -16,7 +16,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
+import sh4re_v2.sh4re_v2.dto.BaseRes;
 import sh4re_v2.sh4re_v2.exception.ApiResponseError;
+import sh4re_v2.sh4re_v2.exception.ErrorResponse;
 import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
 import sh4re_v2.sh4re_v2.exception.error_code.ErrorCode;
 import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
@@ -57,9 +59,13 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 //      log.error("Authentication failed: {}", exception.getMessage());
 //    }
 
-    BusinessException authException2 = new BusinessException(errorCode, exception);
-    ApiResponseError errorResponse = ApiResponseError.of(authException2);
+    BusinessException ex = new BusinessException(errorCode, exception);
+    ErrorResponse errorResponse = new ErrorResponse(
+        errorCode.getCode(),
+        ex.getMessage() == null ? errorCode.defaultMessage() : ex.getMessage()
+    );
+    BaseRes<?> body = new BaseRes<>(false, "에러가 발생했습니다.", errorResponse);
 
-    objectMapper.writeValue(response.getOutputStream(), errorResponse);
+    objectMapper.writeValue(response.getOutputStream(), body);
   }
 }

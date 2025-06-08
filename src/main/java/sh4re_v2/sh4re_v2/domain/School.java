@@ -1,0 +1,19 @@
+package sh4re_v2.sh4re_v2.domain;
+
+import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+public class School extends Base {
+  @NotBlank
+  String name;
+
+  @NotBlank
+  String code;
+}

@@ -8,7 +8,7 @@ import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
 @Getter
 @RequiredArgsConstructor
 public enum CommonErrorCode implements ErrorCode {
-  INVALID_ARGUMENT("INVALID_ARGUMENT", "유효하지 않은 인자입니다.", HttpStatus.UNAUTHORIZED);
+  INVALID_ARGUMENT("INVALID_ARGUMENT", "유효하지 않은 인자입니다.", HttpStatus.BAD_REQUEST),;
 
   private final String code;
   private final String message;

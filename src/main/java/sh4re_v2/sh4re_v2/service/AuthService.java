@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import sh4re_v2.sh4re_v2.domain.School;
 import sh4re_v2.sh4re_v2.domain.User;
 import sh4re_v2.sh4re_v2.dto.login.LoginReq;
 import sh4re_v2.sh4re_v2.dto.login.LoginRes;
@@ -38,6 +39,7 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
   private final UserService userService;
+  private final SchoolService schoolService;
   private final RefreshTokenService refreshTokenService;
   @Value("${cookie.domain:localhost}")
   private String COOKIE_DOMAIN;
@@ -83,13 +85,13 @@ public class AuthService {
       return new LoginRes(accessToken);
     } catch (BadCredentialsException e) {
       // 잘못된 자격 증명 예외 처리
-      throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS, "아이디 또는 비밀번호가 잘못됐습니다.");
+      throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
     } catch (LockedException e) {
       // 계정 잠금 예외 처리
-      throw new BusinessException(AuthErrorCode.ACCOUNT_LOCKED, "계정이 잠겼습니다. 관리자에게 문의하세요.");
+      throw new BusinessException(AuthErrorCode.ACCOUNT_LOCKED);
     } catch (DisabledException e) {
       // 계정 비활성화 예외 처리
-      throw new BusinessException(AuthErrorCode.ACCOUNT_DISABLED, "계정이 비활성화되었습니다.");
+      throw new BusinessException(AuthErrorCode.ACCOUNT_DISABLED);
     } catch (Exception e) {
       // 기타 예외 처리
       throw new BusinessException(AuthErrorCode.AUTHENTICATION_FAILED, "인증에 실패했습니다: " + e.getMessage());
@@ -97,6 +99,8 @@ public class AuthService {
   }
 
   public RegisterRes registerUser(RegisterReq registerReq) {
+    Optional<School> schoolOpt = schoolService.findByCode(registerReq.schoolCode());
+    if(schoolOpt.isEmpty()) throw AuthErrorCode.SCHOOL_NOT_FOUND.defaultException();
     // Check if username already exists
     if (userService.findByUsername(registerReq.username()).isPresent()) {
       throw AuthErrorCode.ALREADY_EXISTS_USERNAME.defaultException();
@@ -112,7 +116,8 @@ public class AuthService {
         registerReq.name(),
         registerReq.grade(),
         registerReq.classNo(),
-        registerReq.studentNo()
+        registerReq.studentNo(),
+        schoolOpt.get()
     );
 
     userService.save(user);

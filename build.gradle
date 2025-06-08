@@ -33,6 +33,7 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -43,4 +44,20 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+def dotenv = new Properties()
+def envFile = file(".env")
+if (envFile.exists()) {
+	envFile.withInputStream { stream ->
+		dotenv.load(stream)
+	}
+}
+
+bootRun {
+	dotenv.each { key, value ->
+		environment key.toString(), value.toString()
+	}
+	classpath = sourceSets.main.runtimeClasspath
+	jvmArgs = ['-Dspring.devtools.restart.enabled=true']
 }

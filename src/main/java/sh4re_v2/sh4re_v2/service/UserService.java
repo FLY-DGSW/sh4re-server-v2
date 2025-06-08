@@ -8,6 +8,7 @@ import sh4re_v2.sh4re_v2.domain.User;
 import sh4re_v2.sh4re_v2.repository.UserRepository;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class UserService {
 
