@@ -26,6 +26,7 @@ import sh4re_v2.sh4re_v2.dto.refreshToken.RefreshTokenRes;
 import sh4re_v2.sh4re_v2.dto.register.RegisterReq;
 import sh4re_v2.sh4re_v2.dto.register.RegisterRes;
 import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
+import sh4re_v2.sh4re_v2.exception.error_code.SchoolErrorCode;
 import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
 import sh4re_v2.sh4re_v2.security.Jwt.JwtTokenProvider;
 import sh4re_v2.sh4re_v2.security.TokenStatus;
@@ -100,7 +101,7 @@ public class AuthService {
 
   public RegisterRes registerUser(RegisterReq registerReq) {
     Optional<School> schoolOpt = schoolService.findByCode(registerReq.schoolCode());
-    if(schoolOpt.isEmpty()) throw AuthErrorCode.SCHOOL_NOT_FOUND.defaultException();
+    if(schoolOpt.isEmpty()) throw SchoolErrorCode.SCHOOL_NOT_FOUND.defaultException();
     // Check if username already exists
     if (userService.findByUsername(registerReq.username()).isPresent()) {
       throw AuthErrorCode.ALREADY_EXISTS_USERNAME.defaultException();

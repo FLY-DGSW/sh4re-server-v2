@@ -13,7 +13,7 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import sh4re_v2.sh4re_v2.security.Role;
 
-@Entity
+@Entity(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor

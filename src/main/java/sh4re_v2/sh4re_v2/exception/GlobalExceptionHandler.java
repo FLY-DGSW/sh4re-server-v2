@@ -2,6 +2,8 @@ package sh4re_v2.sh4re_v2.exception;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,6 +13,7 @@ import sh4re_v2.sh4re_v2.exception.error_code.CommonErrorCode;
 import sh4re_v2.sh4re_v2.exception.error_code.ErrorCode;
 import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
   @ExceptionHandler(BusinessException.class)
@@ -42,5 +45,15 @@ public class GlobalExceptionHandler {
         .build();
 
     return ResponseEntity.status(CommonErrorCode.INVALID_ARGUMENT.defaultHttpStatus()).body(response);
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ErrorResponse> handleException(Exception ex) {
+    log.error("요청 처리 중 에러 발생: {}", ex.getMessage());
+    ErrorResponse errorResponse = new ErrorResponse(
+        CommonErrorCode.INTERNAL_SERVER_ERROR.getCode(),
+        CommonErrorCode.INTERNAL_SERVER_ERROR.defaultMessage()
+    );
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
   }
 }
