@@ -1,5 +1,6 @@
 package sh4re_v2.sh4re_v2.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,10 +21,10 @@ public class Base {
   private Long id;
 
   @CreationTimestamp
-//  @JsonIgnore
+  @JsonIgnore
   private LocalDateTime createdAt;
 
   @UpdateTimestamp
-//  @JsonIgnore
+  @JsonIgnore
   private LocalDateTime updatedAt;
 }

@@ -1,5 +1,6 @@
 package sh4re_v2.sh4re_v2.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,6 +23,7 @@ public class User extends Base {
   private String username;
 
   @NotBlank
+  @JsonIgnore
   private String password;
 
   @NotBlank
@@ -42,7 +44,7 @@ public class User extends Base {
   @Enumerated(EnumType.STRING)
   private Role role = Role.USER; // Default role
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @ManyToOne(fetch = FetchType.EAGER, optional = false)
   School school;
 
   public User(String username, String password, String email, String name, int grade, int classNo, int studentNo, School school) {
