@@ -10,7 +10,7 @@ import sh4re_v2.sh4re_v2.repository.SchoolRepository;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class SchoolService {
+public class  SchoolService {
 
   private final SchoolRepository schoolRepository;
 
