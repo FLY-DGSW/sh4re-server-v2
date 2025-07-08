@@ -1,5 +1,6 @@
 package sh4re_v2.sh4re_v2.common;
 
+import org.springdoc.webmvc.api.OpenApiResource;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -11,11 +12,14 @@ import sh4re_v2.sh4re_v2.dto.BaseRes;
 import sh4re_v2.sh4re_v2.exception.ApiResponseError;
 import sh4re_v2.sh4re_v2.exception.ErrorResponse;
 
-@ControllerAdvice
+@ControllerAdvice(basePackages = "sh4re_v2.sh4re_v2")
 public class GlobalResponseWrapper implements ResponseBodyAdvice<Object> {
 
   @Override
   public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
+    if (returnType.getContainingClass().equals(OpenApiResource.class)) {
+      return false;
+    }
     return true; // 모든 컨트롤러에 적용
   }
 

@@ -40,8 +40,10 @@ public class SecurityPathConfig {
      */
     private static final EndpointConfig[] PUBLIC_ENDPOINTS = {
         new EndpointConfig("/api-docs/**"),
+        new EndpointConfig("/api-docs"),
         new EndpointConfig("/swagger-ui/**"),
-        new EndpointConfig("/api/auth/**"),
+        new EndpointConfig("/swagger-ui.html"),
+        new EndpointConfig("/api/auth/**")
     };
 
     private static final EndpointConfig[] AUTHENTICATED_ENDPOINTS = {

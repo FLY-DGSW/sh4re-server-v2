@@ -13,9 +13,11 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
+import sh4re_v2.sh4re_v2.common.HttpRequestEndpointUtil;
 import sh4re_v2.sh4re_v2.dto.BaseRes;
 import sh4re_v2.sh4re_v2.exception.ErrorResponse;
 import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
+import sh4re_v2.sh4re_v2.exception.error_code.CommonErrorCode;
 import sh4re_v2.sh4re_v2.exception.error_code.ErrorCode;
 import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
 
@@ -25,12 +27,13 @@ import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
   private final ObjectMapper objectMapper;
+  private final HttpRequestEndpointUtil httpRequestEndpointUtil;
 
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response,
-      AuthenticationException authException) throws IOException, ServletException {
+      AuthenticationException authException) throws IOException {
 //    log.error("Unauthorized error: {}", authException.getMessage());
-
+    if(!httpRequestEndpointUtil.isEndpointExistOrElseSetErrorResponse(request, response)) return;
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 

@@ -19,12 +19,12 @@ public class UserPrincipal implements UserDetails {
 
   public UserPrincipal(User user) {
     this.user = user;
-    this.authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole().getKey()));
+    this.authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole().getAuthority()));
   }
 
   public UserPrincipal(User user, Map<String, Object> attributes, String nameAttributeKey) {
     this.user = user;
-    this.authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole().getKey()));
+    this.authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole().getAuthority()));
     this.attributes = attributes;
     this.nameAttributeKey = nameAttributeKey;
   }

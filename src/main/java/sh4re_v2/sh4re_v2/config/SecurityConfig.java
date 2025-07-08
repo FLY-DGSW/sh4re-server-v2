@@ -3,6 +3,7 @@ package sh4re_v2.sh4re_v2.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import sh4re_v2.sh4re_v2.security.CustomAccessDeniedHandler;
 import sh4re_v2.sh4re_v2.security.Jwt.JwtAuthenticationEntryPoint;
 import sh4re_v2.sh4re_v2.security.Jwt.JwtAuthenticationFilter;
 
@@ -26,6 +28,7 @@ public class SecurityConfig {
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final SecurityPathConfig securityPathConfig;
+  private final CustomAccessDeniedHandler accessDeniedHandler;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -33,6 +36,7 @@ public class SecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .exceptionHandling(exception -> exception
             .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+            .accessDeniedHandler(accessDeniedHandler)
         )
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -52,7 +56,7 @@ public class SecurityConfig {
               authorize.requestMatchers(endpoint.getPattern()).permitAll();
             }
           });
-          authorize.anyRequest().authenticated();
+          authorize.requestMatchers("/test/teacher").hasRole("TEACHER").anyRequest().authenticated();
         });
 
     // Add JWT filter
