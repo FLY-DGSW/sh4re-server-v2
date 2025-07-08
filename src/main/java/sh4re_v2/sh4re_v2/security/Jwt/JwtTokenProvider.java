@@ -74,7 +74,7 @@ public class JwtTokenProvider {
   private Map<String, Object> createClaims(User user) {
     Map<String, Object> claims = new HashMap<>();
     claims.put("id", user.getId());
-    claims.put("role", user.getRole().getKey());
+    claims.put("role", user.getRole().getAuthority());
     return claims;
   }
 

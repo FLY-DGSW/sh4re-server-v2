@@ -42,7 +42,7 @@ public class User extends Base {
   private int studentNo;
 
   @Enumerated(EnumType.STRING)
-  private Role role = Role.USER; // Default role
+  private Role role = Role.STUDENT; // Default role
 
   @ManyToOne(fetch = FetchType.EAGER, optional = false)
   School school;
