@@ -1,6 +1,7 @@
-package sh4re_v2.sh4re_v2.domain;
+package sh4re_v2.sh4re_v2.domain.main;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,7 +12,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.Length;
 import sh4re_v2.sh4re_v2.security.Role;
 
 @Entity(name = "users")

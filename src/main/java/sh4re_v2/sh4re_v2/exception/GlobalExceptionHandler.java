@@ -47,6 +47,14 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(CommonErrorCode.INVALID_ARGUMENT.defaultHttpStatus()).body(response);
   }
 
+  @ExceptionHandler(IllegalStateException.class)
+  public ResponseEntity<?> handleIllegalState(Exception e) {
+    if (e.getMessage().contains("No tenant identifier")) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("테넌트 정보를 찾을 수 없습니다.");
+    }
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류");
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleException(Exception ex) {
     log.error("요청 처리 중 에러 발생: {}", ex.getMessage());

@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
@@ -15,13 +16,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import sh4re_v2.sh4re_v2.config.SecurityPathConfig;
+import sh4re_v2.sh4re_v2.domain.main.School;
 import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
+import sh4re_v2.sh4re_v2.exception.error_code.ErrorCode;
+import sh4re_v2.sh4re_v2.exception.error_code.SchoolErrorCode;
 import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
+import sh4re_v2.sh4re_v2.repository.main.SchoolRepository;
 import sh4re_v2.sh4re_v2.security.TokenStatus;
+import sh4re_v2.sh4re_v2.tenant.SchoolContextHolder;
 
 @Slf4j
 @Component
@@ -31,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtTokenProvider jwtTokenProvider;
   private final UserDetailsService userDetailsService;
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-  private final SecurityPathConfig securityPathConfig;
+  private final SchoolRepository schoolRepository;
 
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
@@ -46,6 +51,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       @NonNull HttpServletResponse response,
       @NonNull FilterChain filterChain
   ) throws ServletException, IOException {
+    try{
+
     try {
       String jwt = getJwtFromRequest(request);
       if (!StringUtils.hasText(jwt)) {
@@ -63,6 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       }
 
       String username = jwtTokenProvider.extractUsername(jwt);
+      Long schoolId = jwtTokenProvider.extractSchoolId(jwt);
       UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
       UsernamePasswordAuthenticationToken authentication =
@@ -70,6 +78,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
               userDetails.getAuthorities());
       authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
       SecurityContextHolder.getContext().setAuthentication(authentication);
+      Optional<School> school = schoolRepository.findById(schoolId);
+      if(school.isEmpty()) {
+        setRequestException(request, SchoolErrorCode.SCHOOL_NOT_FOUND);
+        return;
+      }
+      SchoolContextHolder.setTenantId(school.get().getTenantId());
     } catch (Exception e) {
       log.error("Could not set user authentication in security context", e);
       request.setAttribute("exception", e);
@@ -79,6 +93,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       } else {
         filterChain.doFilter(request, response);
       }
+    }
+    } finally {
+      SchoolContextHolder.clear();
     }
   }
 
@@ -90,7 +107,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     return null;
   }
 
-  private void setRequestException (HttpServletRequest request, AuthErrorCode authErrorCode){
+  private void setRequestException (HttpServletRequest request, ErrorCode authErrorCode){
     request.setAttribute("exception", authErrorCode.defaultException());
   }
 }

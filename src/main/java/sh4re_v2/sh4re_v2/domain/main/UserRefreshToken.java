@@ -1,4 +1,4 @@
-package sh4re_v2.sh4re_v2.domain;
+package sh4re_v2.sh4re_v2.domain.main;
 
 import jakarta.persistence.Entity;
 import java.util.Date;
