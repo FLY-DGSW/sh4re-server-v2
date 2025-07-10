@@ -28,7 +28,6 @@ public class HttpRequestEndpointUtil {
     for (HandlerMapping handlerMapping : handlerMappings) {
       try {
         HandlerExecutionChain foundHandler = handlerMapping.getHandler(request);
-        System.out.println(foundHandler);
         if (foundHandler != null) {
           return true;
         }
