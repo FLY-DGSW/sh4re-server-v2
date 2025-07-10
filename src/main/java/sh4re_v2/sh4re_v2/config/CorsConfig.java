@@ -14,7 +14,7 @@ public class CorsConfig {
     CorsConfiguration config = new CorsConfiguration();
 
     config.setAllowCredentials(true);
-    config.setAllowedOrigins(List.of("http://localhost:5173", "https://sh4re2.chaeyn.com"));
+    config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:4173", "https://sh4re2.chaeyn.com"));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     config.setExposedHeaders(List.of("Authorization","Content-Type", "Accept"));
     config.setAllowedHeaders(List.of("Authorization","Content-Type", "Accept"));
