@@ -1,6 +1,7 @@
-package sh4re_v2.sh4re_v2.domain;
+package sh4re_v2.sh4re_v2.domain.main;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
