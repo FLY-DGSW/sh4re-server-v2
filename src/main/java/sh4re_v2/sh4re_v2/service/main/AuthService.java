@@ -1,9 +1,8 @@
-package sh4re_v2.sh4re_v2.service;
+package sh4re_v2.sh4re_v2.service.main;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,8 +16,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import sh4re_v2.sh4re_v2.domain.School;
-import sh4re_v2.sh4re_v2.domain.User;
+import org.springframework.transaction.annotation.Transactional;
+import sh4re_v2.sh4re_v2.domain.main.School;
+import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.dto.login.LoginReq;
 import sh4re_v2.sh4re_v2.dto.login.LoginRes;
 import sh4re_v2.sh4re_v2.dto.logout.LogOutRes;
@@ -33,7 +33,7 @@ import sh4re_v2.sh4re_v2.security.TokenStatus;
 import sh4re_v2.sh4re_v2.security.UserPrincipal;
 
 @Service
-@Transactional
+@Transactional(transactionManager="mainTransactionManager")
 @RequiredArgsConstructor
 public class AuthService {
   private final AuthenticationManager authenticationManager;
