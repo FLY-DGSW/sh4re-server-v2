@@ -7,7 +7,7 @@ import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import sh4re_v2.sh4re_v2.domain.User;
+import sh4re_v2.sh4re_v2.domain.main.User;
 
 @Getter
 public class UserPrincipal implements UserDetails {

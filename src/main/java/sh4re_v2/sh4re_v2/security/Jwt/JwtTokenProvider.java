@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import sh4re_v2.sh4re_v2.domain.User;
+import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
 import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
 import sh4re_v2.sh4re_v2.security.TokenStatus;
@@ -75,6 +75,7 @@ public class JwtTokenProvider {
     Map<String, Object> claims = new HashMap<>();
     claims.put("id", user.getId());
     claims.put("role", user.getRole().getAuthority());
+    claims.put("schoolId", user.getSchool().getId());
     return claims;
   }
 
@@ -84,6 +85,10 @@ public class JwtTokenProvider {
 
   public Long extractUserId(String token) {
     return extractAllClaims(token).get("id", Long.class);
+  }
+
+  public Long extractSchoolId(String token) {
+    return extractAllClaims(token).get("schoolId", Long.class);
   }
 
   public Date extractExpiration(String token) {

@@ -1,4 +1,4 @@
-package sh4re_v2.sh4re_v2.service;
+package sh4re_v2.sh4re_v2.service.main;
 
 import java.util.Date;
 import java.util.Optional;
@@ -6,13 +6,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sh4re_v2.sh4re_v2.domain.UserRefreshToken;
+import sh4re_v2.sh4re_v2.domain.main.UserRefreshToken;
 import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
-import sh4re_v2.sh4re_v2.repository.RefreshTokenRepository;
+import sh4re_v2.sh4re_v2.repository.main.RefreshTokenRepository;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(transactionManager="mainTransactionManager")
 public class RefreshTokenService {
 
   private final RefreshTokenRepository refreshTokenRepository;
