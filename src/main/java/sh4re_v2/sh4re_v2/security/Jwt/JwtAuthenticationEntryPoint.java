@@ -30,35 +30,34 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response,
       AuthenticationException authException) throws IOException {
-    if(httpRequestEndpointUtil.isInvalidEndpoint(request, response)) return;
+    // 만약 엔드포인트가 없어서 에러가 발생했다면 응답을 설정하고 return
+    if(httpRequestEndpointUtil.isInvalidEndpointThenSetResponse(request, response)) return;
+
+    // 반환 타입 설정
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-    // Get the original exception from the request if available
-    Throwable exception = (Throwable) request.getAttribute("exception");
-    if (exception == null) {
-      exception = authException.getCause();
-    }
 
-    BaseRes<?> body = getBody(authException, exception);
+    // body 생성
+    Throwable exception = authException.getCause() != null ? authException.getCause() : authException;
+    BaseRes<?> body = getBody(exception);
 
+    // response에 생성한 body를 직렬화하여 저장한다.
     objectMapper.writeValue(response.getOutputStream(), body);
   }
 
-  private static BaseRes<?> getBody(AuthenticationException authException, Throwable exception) {
+  private static BaseRes<?> getBody(Throwable exception) {
     StatusCode statusCode;
-
     if (exception instanceof ApplicationException) {
       statusCode = ((ApplicationException) exception).getStatusCode();
-    } else if (exception instanceof JwtException
-        || authException instanceof BadCredentialsException) {
+    } else if (
+        exception instanceof JwtException ||
+        exception instanceof BadCredentialsException ||
+        exception instanceof IllegalArgumentException
+    ) {
       statusCode = AuthStatusCode.INVALID_JWT;
     } else {
       statusCode = AuthStatusCode.AUTHENTICATION_FAILED;
     }
-
-//    if (exception != null) {
-//      log.error("Authentication failed: {}", exception.getMessage());
-//    }
 
     ApplicationException ex = new ApplicationException(statusCode, exception);
     return new BaseRes<>(

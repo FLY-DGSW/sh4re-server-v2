@@ -31,15 +31,12 @@ import sh4re_v2.sh4re_v2.context.TenantContext;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtTokenProvider jwtTokenProvider;
-  private final UserDetailsService userDetailsService;
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-  private final SchoolRepository schoolRepository;
   private final AuthUtil authUtil;
 
   @Override
-  protected boolean shouldNotFilter(@NonNull HttpServletRequest request) throws ServletException {
+  protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
     String token = jwtTokenProvider.getJwtFromRequest(request);
-
     return token == null;
   }
 

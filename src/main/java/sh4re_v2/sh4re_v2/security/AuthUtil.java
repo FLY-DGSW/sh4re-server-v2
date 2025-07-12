@@ -28,17 +28,23 @@ public class AuthUtil {
     String jwt = extractTokenOrThrow(request);
     validateTokenStatus(jwtTokenProvider.validateToken(jwt));
 
-    String username = jwtTokenProvider.extractUsername(jwt);
-    Long schoolId = jwtTokenProvider.extractSchoolId(jwt);
-    School school = schoolService.findById(schoolId)
-        .orElseThrow(() -> SchoolException.of(SchoolStatusCode.SCHOOL_NOT_FOUND));
+    setAuthentication(request, jwt);
+    setTenantDb(jwt);
+  }
 
+  private void setAuthentication(HttpServletRequest request, String jwt) {
+    String username = jwtTokenProvider.extractUsername(jwt);
     UserDetails userDetails = customUserDetailService.loadUserByUsername(username);
     UsernamePasswordAuthenticationToken auth =
         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
     SecurityContextHolder.getContext().setAuthentication(auth);
+  }
 
+  private void setTenantDb(String jwt) {
+    Long schoolId = jwtTokenProvider.extractSchoolId(jwt);
+    School school = schoolService.findById(schoolId)
+        .orElseThrow(() -> SchoolException.of(SchoolStatusCode.SCHOOL_NOT_FOUND));
     TenantContext.setTenantId(school.getTenantId());
   }
 

@@ -8,12 +8,14 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,12 +25,17 @@ import org.springframework.util.StringUtils;
 import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.ApplicationException;
+import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.security.TokenStatus;
+import sh4re_v2.sh4re_v2.service.main.RefreshTokenService;
+import sh4re_v2.sh4re_v2.service.main.UserService;
 
 @Slf4j
 @Component
 public class JwtTokenProvider {
 
+  private final RefreshTokenService refreshTokenService;
+  private final UserService userService;
   @Value("${jwt.secret}")
   private String secretKey;
 
@@ -38,27 +45,32 @@ public class JwtTokenProvider {
   @Value("${jwt.refresh-token-expiration}")
   private long refreshTokenExpiration;
 
+  public JwtTokenProvider(RefreshTokenService refreshTokenService, UserService userService) {
+    this.refreshTokenService = refreshTokenService;
+    this.userService = userService;
+  }
+
   private Key getSigningKey() {
     byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
     return Keys.hmacShaKeyFor(keyBytes);
   }
 
   public String generateAccessToken(User user) {
-    return generateToken(user, accessTokenExpiration);
+    return generateToken(user, accessTokenExpiration, false);
   }
 
   public String generateRefreshToken(User user) {
-    return generateToken(user, refreshTokenExpiration);
+    return generateToken(user, refreshTokenExpiration, true);
   }
 
-  private String generateToken(User user, long expiration) {
+  private String generateToken(User user, long expiration, boolean isRefreshToken) {
     long now = System.currentTimeMillis();
     Date issuedAt = new Date(now);
     Date expiryDate = new Date(now + expiration);
 
     return Jwts.builder()
         .setHeader(createHeader())
-        .setClaims(createClaims(user))
+        .setClaims(isRefreshToken ? new HashMap<>() : createClaims(user))
         .setSubject(user.getUsername())
         .setIssuedAt(issuedAt)
         .setExpiration(expiryDate)
@@ -137,6 +149,17 @@ public class JwtTokenProvider {
     return null;
   }
 
+  public String getRefreshTokenFromRequest(HttpServletRequest request) {
+    String refreshToken = null;
+    for (Cookie cookie : request.getCookies()) {
+      if (cookie.getName().equals("refreshToken")) {
+        refreshToken = cookie.getValue();
+      }
+    }
+    if(refreshToken == null) throw AuthException.of(AuthStatusCode.INVALID_JWT);
+    return refreshToken;
+  }
+
   public TokenStatus validateToken(String token) {
     try {
       Jwts.parserBuilder()
@@ -149,5 +172,22 @@ public class JwtTokenProvider {
     } catch (UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
       return TokenStatus.INVALID;
     }
+  }
+
+  public void validateRefreshToken(String refreshToken) {
+    if(validateToken(refreshToken) != TokenStatus.AUTHENTICATED) {
+      throw AuthException.of(AuthStatusCode.INVALID_JWT);
+    }
+
+    String username = extractUsername(refreshToken);
+    if (!refreshTokenService.isRefreshTokenValid(username, refreshToken)) {
+      throw AuthException.of(AuthStatusCode.INVALID_JWT);
+    }
+  }
+
+  public String generateNewRefreshToken(User user) {
+    String newRefreshToken = generateRefreshToken(user);
+    refreshTokenService.saveOrUpdateRefreshToken(user.getUsername(), newRefreshToken);
+    return newRefreshToken;
   }
 }

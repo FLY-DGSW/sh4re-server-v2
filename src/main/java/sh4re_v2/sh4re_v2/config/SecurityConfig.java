@@ -14,6 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import sh4re_v2.sh4re_v2.config.SecurityPathConfig.EndpointConfig;
+import sh4re_v2.sh4re_v2.security.AuthorityChecker;
 import sh4re_v2.sh4re_v2.security.CustomAccessDeniedHandler;
 import sh4re_v2.sh4re_v2.security.jwt.JwtAuthenticationEntryPoint;
 import sh4re_v2.sh4re_v2.security.jwt.JwtAuthenticationFilter;
@@ -26,7 +29,6 @@ public class SecurityConfig {
 
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
-  private final SecurityPathConfig securityPathConfig;
   private final CustomAccessDeniedHandler accessDeniedHandler;
 
   @Bean
@@ -40,28 +42,20 @@ public class SecurityConfig {
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
+        // Add JWT filter
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(authorize -> {
-          authorize
-              .requestMatchers("/test/teacher").hasRole("TEACHER");
-          securityPathConfig.getAuthenticatedEndpoints().forEach(endpoint -> {
-            if (endpoint.getMethod() != null) {
-              authorize.requestMatchers(endpoint.getMethod(), endpoint.getPattern()).authenticated();
-            } else {
-              authorize.requestMatchers(endpoint.getPattern()).authenticated();
-            }
-          });
-          securityPathConfig.getPublicEndpoints().forEach(endpoint -> {
-            if (endpoint.getMethod() != null) {
-              authorize.requestMatchers(endpoint.getMethod(), endpoint.getPattern()).permitAll();
-            } else {
-              authorize.requestMatchers(endpoint.getPattern()).permitAll();
-            }
-          });
-          authorize.anyRequest().authenticated();
+          for (EndpointConfig endpoint : SecurityPathConfig.endpointConfigs) {
+            var matcher = endpoint.getMethod() != null
+                ? PathPatternRequestMatcher.withDefaults().matcher(endpoint.getMethod(), endpoint.getPattern())
+                : PathPatternRequestMatcher.withDefaults().matcher(endpoint.getPattern());
+            authorize.requestMatchers(matcher).access(
+                (auth, context) ->
+                    AuthorityChecker.check(auth, context, endpoint)
+            );
+          }
+          authorize.anyRequest().denyAll();
         });
-
-    // Add JWT filter
-    http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
