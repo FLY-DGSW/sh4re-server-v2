@@ -1,15 +1,20 @@
 package sh4re_v2.sh4re_v2.exception;
 
+import jakarta.security.auth.message.AuthStatus;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import sh4re_v2.sh4re_v2.dto.BaseRes;
+import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.error_code.CommonStatusCode;
 import sh4re_v2.sh4re_v2.exception.error_code.StatusCode;
 import sh4re_v2.sh4re_v2.exception.error_code.TenantStatusCode;
@@ -52,8 +57,8 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(IllegalStateException.class)
-  public ResponseEntity<BaseRes<Void>> handleIllegalState(Exception e) {
-    if (e.getMessage().contains("No tenant identifier")) {
+  public ResponseEntity<BaseRes<Void>> handleIllegalState(IllegalStateException ex) {
+    if (ex.getMessage().contains("No tenant identifier")) {
       return ResponseEntity
           .status(TenantStatusCode.TENANT_NOT_FOUND.getHttpStatus())
           .body(new BaseRes<>(
@@ -69,6 +74,42 @@ public class GlobalExceptionHandler {
             false,
             CommonStatusCode.INTERNAL_SERVER_ERROR.getCode(),
             CommonStatusCode.INTERNAL_SERVER_ERROR.getMessage(),
+            null
+        ));
+  }
+
+  @ExceptionHandler(BadCredentialsException.class)
+  public ResponseEntity<BaseRes<Void>> handleBadCredentialsException(BadCredentialsException ex) {
+    return ResponseEntity
+        .status(AuthStatusCode.INVALID_CREDENTIALS.getHttpStatus())
+        .body(new BaseRes<>(
+            false,
+            AuthStatusCode.INVALID_CREDENTIALS.getCode(),
+            AuthStatusCode.INVALID_CREDENTIALS.getMessage(),
+            null
+        ));
+  }
+
+  @ExceptionHandler(LockedException.class)
+  public ResponseEntity<BaseRes<Void>> handleAccountLockedException(LockedException ex) {
+    return ResponseEntity
+        .status(AuthStatusCode.ACCOUNT_LOCKED.getHttpStatus())
+        .body(new BaseRes<>(
+            false,
+            AuthStatusCode.ACCOUNT_LOCKED.getCode(),
+            AuthStatusCode.ACCOUNT_LOCKED.getMessage(),
+            null
+        ));
+  }
+
+  @ExceptionHandler(DisabledException.class)
+  public ResponseEntity<BaseRes<Void>> handleAccountDisabledException(DisabledException ex) {
+    return ResponseEntity
+        .status(AuthStatusCode.ACCOUNT_DISABLED.getHttpStatus())
+        .body(new BaseRes<>(
+            false,
+            AuthStatusCode.ACCOUNT_DISABLED.getCode(),
+            AuthStatusCode.ACCOUNT_DISABLED.getMessage(),
             null
         ));
   }

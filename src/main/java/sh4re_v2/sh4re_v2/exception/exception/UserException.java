@@ -4,33 +4,16 @@ import lombok.Getter;
 import sh4re_v2.sh4re_v2.exception.error_code.StatusCode;
 
 @Getter
-public class UserException extends RuntimeException {
-  private final StatusCode statusCode;
-
+public class UserException extends ApplicationException {
   public UserException(StatusCode statusCode) {
-    super(statusCode.getMessage());
-    this.statusCode = statusCode;
+    super(statusCode);
   }
 
   public UserException(StatusCode statusCode, Throwable cause) {
-    super(statusCode.getMessage(), cause);
-    this.statusCode = statusCode;
+    super(statusCode, cause);
   }
 
   public UserException(StatusCode statusCode, String message) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-
-  public static UserException of(StatusCode statusCode) {
-    return new UserException(statusCode);
-  }
-
-  public static UserException of(StatusCode statusCode, Throwable cause) {
-    return new UserException(statusCode, cause);
-  }
-
-  public static UserException of(StatusCode statusCode, String customMessage) {
-    return new UserException(statusCode, customMessage);
+    super(statusCode, message);
   }
 }

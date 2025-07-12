@@ -27,7 +27,6 @@ import sh4re_v2.sh4re_v2.dto.register.RegisterReq;
 import sh4re_v2.sh4re_v2.dto.register.RegisterRes;
 import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.error_code.SchoolStatusCode;
-import sh4re_v2.sh4re_v2.exception.exception.ApplicationException;
 import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.exception.exception.SchoolException;
 import sh4re_v2.sh4re_v2.security.jwt.JwtTokenProvider;
@@ -59,102 +58,73 @@ public class AuthService {
   }
 
   public LoginRes login(LoginReq loginReq, HttpServletResponse response) {
-    try {
-      // 인증 시도
-      Authentication authentication = authenticationManager.authenticate(
-          new UsernamePasswordAuthenticationToken(
-              loginReq.username(),
-              loginReq.password()
-          )
-      );
+    // 인증 시도
+    Authentication authentication = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+            loginReq.username(),
+            loginReq.password()
+        )
+    );
 
-      // 인증 성공 시 SecurityContext에 저장
-      SecurityContextHolder.getContext().setAuthentication(authentication);
-      UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-      User user = userPrincipal.getUser();
+    // 인증 성공 시 SecurityContext에 저장
+    SecurityContextHolder.getContext().setAuthentication(authentication);
 
-      // 토큰 생성
-      String accessToken = jwtTokenProvider.generateAccessToken(user);
-      String refreshToken = jwtTokenProvider.generateRefreshToken(user);
+    // user 정보 불러오기
+    UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+    User user = userPrincipal.getUser();
 
-      refreshTokenService.saveOrUpdateRefreshToken(user.getUsername(), refreshToken);
+    // 토큰 생성
+    String accessToken = jwtTokenProvider.generateAccessToken(user);
+    String refreshToken = jwtTokenProvider.generateRefreshToken(user);
 
-      // 쿠키 설정
-      Cookie refreshCookie = createCookie("refreshToken", refreshToken, true);
+    // refreshToken 저장
+    refreshTokenService.saveOrUpdateRefreshToken(user.getUsername(), refreshToken);
 
-      response.addCookie(refreshCookie);
+    // 쿠키 설정
+    Cookie refreshCookie = createCookie("refreshToken", refreshToken, true);
+    response.addCookie(refreshCookie);
 
-      // 응답 객체 생성 및 반환
-      return new LoginRes(accessToken);
-    } catch (BadCredentialsException e) {
-      // 잘못된 자격 증명 예외 처리
-      throw new ApplicationException(AuthStatusCode.INVALID_CREDENTIALS);
-    } catch (LockedException e) {
-      // 계정 잠금 예외 처리
-      throw new ApplicationException(AuthStatusCode.ACCOUNT_LOCKED);
-    } catch (DisabledException e) {
-      // 계정 비활성화 예외 처리
-      throw new ApplicationException(AuthStatusCode.ACCOUNT_DISABLED);
-    } catch (Exception e) {
-      // 기타 예외 처리
-      throw new ApplicationException(AuthStatusCode.AUTHENTICATION_FAILED, "인증에 실패했습니다: " + e.getMessage());
-    }
+    // 응답 객체 생성 및 반환
+    return new LoginRes(accessToken);
   }
 
   public RegisterRes registerUser(RegisterReq registerReq) {
-    Optional<School> schoolOpt = schoolService.findByCode(registerReq.schoolCode());
-    if(schoolOpt.isEmpty()) throw SchoolException.of(SchoolStatusCode.SCHOOL_NOT_FOUND);
     // Check if username already exists
-    if (userService.findByUsername(registerReq.username()).isPresent()) {
-      throw AuthException.of(AuthStatusCode.ALREADY_EXISTS_USERNAME);
-    }
+    userService.validateUsername(registerReq.username());
 
-    // Create new user
-    String encodedPassword = passwordEncoder.encode(registerReq.password());
+    // Find School. If it doesn't exist, throw an error.
+    School school = schoolService
+        .findByCode(registerReq.schoolCode())
+        .orElseThrow(() -> SchoolException.of(SchoolStatusCode.SCHOOL_NOT_FOUND));
 
-    User user = new User(
-        registerReq.username(),
-        encodedPassword,
-        registerReq.email(),
-        registerReq.name(),
-        registerReq.grade(),
-        registerReq.classNo(),
-        registerReq.studentNo(),
-        schoolOpt.get()
-    );
+    // Create User Entity
+    User user = registerReq.toEntity(passwordEncoder, school);
 
+    // Save the user (register)
     userService.save(user);
 
+    // return a response
     return new RegisterRes(user.getId());
   }
 
   public RefreshTokenRes refreshToken(HttpServletRequest request, HttpServletResponse response){
     // 1. 쿠키에서 Refresh Token 꺼내기
-    String refreshToken = null;
-    for (Cookie cookie : request.getCookies()) {
-      if (cookie.getName().equals("refreshToken")) {
-        refreshToken = cookie.getValue();
-      }
-    }
+    String refreshToken = jwtTokenProvider.getRefreshTokenFromRequest(request);
 
     // 2. Refresh Token 검증
-    if (refreshToken == null || jwtTokenProvider.validateToken(refreshToken) != TokenStatus.AUTHENTICATED) {
-      throw AuthException.of(AuthStatusCode.INVALID_JWT);
-    }
+    jwtTokenProvider.validateRefreshToken(refreshToken);
 
+    // 3. 유저 추출
     String username = jwtTokenProvider.extractUsername(refreshToken);
-    if (!refreshTokenService.isRefreshTokenValid(username, refreshToken)) {
-      throw AuthException.of(AuthStatusCode.INVALID_JWT);
-    }
+    User user = userService
+        .findByUsername(username)
+        .orElseThrow(() -> AuthException.of(AuthStatusCode.INVALID_JWT));
 
     // 3. 새 Access Token 발급
-    Optional<User> user = userService.findByUsername(username);
-    if(user.isEmpty()) throw AuthException.of(AuthStatusCode.INVALID_JWT);
-    String newAccessToken = jwtTokenProvider.generateAccessToken(user.get());
+    String newAccessToken = jwtTokenProvider.generateAccessToken(user);
 
-    // 4. 필요시 새 Refresh Token도 발급 & 쿠키에 저장 (옵션)
-    String newRefreshToken = jwtTokenProvider.generateRefreshToken(user.get());
-    refreshTokenService.saveOrUpdateRefreshToken(username, newRefreshToken);
+    // 4. 새 Refresh Token 발급 & 쿠키에 저장
+    String newRefreshToken = jwtTokenProvider.generateNewRefreshToken(user);
     response.addCookie(createCookie("refreshToken", newRefreshToken, true));
 
     return new RefreshTokenRes(newAccessToken);

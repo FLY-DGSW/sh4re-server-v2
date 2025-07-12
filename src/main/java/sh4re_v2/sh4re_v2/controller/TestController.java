@@ -23,7 +23,6 @@ public class TestController {
     }
 
     @GetMapping("/student")
-    @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER')")
     public ResponseEntity<?> studentEndpoint(@AuthenticationPrincipal UserPrincipal userPrincipal) {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "User endpoint - accessible to authenticated users");
