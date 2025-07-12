@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.time.Instant;
 import java.util.List;
 import lombok.Builder;
-import sh4re_v2.sh4re_v2.exception.error_code.ErrorCode;
-import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
+import sh4re_v2.sh4re_v2.exception.error_code.StatusCode;
+import sh4re_v2.sh4re_v2.exception.exception.ApplicationException;
 
 /**
  *
@@ -30,14 +30,14 @@ public record ApiResponseError(
     @JsonIgnore
     Instant timestamp
 ) {
-  public static ApiResponseError of(BusinessException exception) {
-    ErrorCode errorCode = exception.getErrorCode();
+  public static ApiResponseError of(ApplicationException exception) {
+    StatusCode statusCode = exception.getStatusCode();
     String errorName = exception.getClass().getName();
     errorName = errorName.substring(errorName.lastIndexOf('.') + 1);
 
     return ApiResponseError.builder()
-        .code(errorCode.getCode())
-        .status(errorCode.defaultHttpStatus().value())
+        .code(statusCode.getCode())
+        .status(statusCode.getHttpStatus().value())
         .name(errorName)
         .message(exception.getMessage())
         .cause(ApiSimpleError.listOfCauseSimpleError(exception.getCause()))

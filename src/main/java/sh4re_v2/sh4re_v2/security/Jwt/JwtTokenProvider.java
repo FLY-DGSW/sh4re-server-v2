@@ -1,4 +1,4 @@
-package sh4re_v2.sh4re_v2.security.Jwt;
+package sh4re_v2.sh4re_v2.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -8,6 +8,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
@@ -18,9 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import sh4re_v2.sh4re_v2.domain.main.User;
-import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
-import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
+import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
+import sh4re_v2.sh4re_v2.exception.exception.ApplicationException;
 import sh4re_v2.sh4re_v2.security.TokenStatus;
 
 @Slf4j
@@ -108,9 +110,9 @@ public class JwtTokenProvider {
           .parseClaimsJws(token)
           .getBody();
     } catch (ExpiredJwtException e) {
-      throw new BusinessException(AuthErrorCode.EXPIRED_JWT, e);
+      throw new ApplicationException(AuthStatusCode.EXPIRED_JWT, e);
     } catch (UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
-      throw new BusinessException(AuthErrorCode.INVALID_JWT, e);
+      throw new ApplicationException(AuthStatusCode.INVALID_JWT, e);
     }
   }
 
@@ -125,6 +127,14 @@ public class JwtTokenProvider {
     } catch (ExpiredJwtException e) {
       return true;
     }
+  }
+
+  public String getJwtFromRequest(HttpServletRequest request) {
+    String bearerToken = request.getHeader("Authorization");
+    if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+      return bearerToken.substring(7);
+    }
+    return null;
   }
 
   public TokenStatus validateToken(String token) {
