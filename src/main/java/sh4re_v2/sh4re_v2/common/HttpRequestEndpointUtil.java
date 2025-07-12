@@ -13,7 +13,7 @@ import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerMapping;
 import sh4re_v2.sh4re_v2.dto.BaseRes;
 import sh4re_v2.sh4re_v2.exception.ErrorResponse;
-import sh4re_v2.sh4re_v2.exception.error_code.CommonErrorCode;
+import sh4re_v2.sh4re_v2.exception.error_code.CommonStatusCode;
 
 @Component
 @RequiredArgsConstructor
@@ -38,16 +38,16 @@ public class HttpRequestEndpointUtil {
     return false;
   }
 
-  public boolean isEndpointExistOrElseSetErrorResponse(HttpServletRequest request, HttpServletResponse response)
+  public boolean isInvalidEndpoint(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
     if(!isEndpointExist(request)){
       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
       response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-      ErrorResponse errorResponse = new ErrorResponse(
-          CommonErrorCode.ENDPOINT_NOT_FOUND.getCode(),
-          CommonErrorCode.ENDPOINT_NOT_FOUND.getMessage()
-      );
-      BaseRes<?> body = new BaseRes<>(false, "에러가 발생했습니다.", errorResponse);
+      BaseRes<?> body = new BaseRes<>(
+          false,
+          CommonStatusCode.ENDPOINT_NOT_FOUND.getCode(),
+          CommonStatusCode.ENDPOINT_NOT_FOUND.getMessage(),
+          null);
       objectMapper.writeValue(response.getOutputStream(), body);
       return false;
     }

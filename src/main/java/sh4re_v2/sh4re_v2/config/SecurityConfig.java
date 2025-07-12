@@ -3,7 +3,6 @@ package sh4re_v2.sh4re_v2.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -16,8 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import sh4re_v2.sh4re_v2.security.CustomAccessDeniedHandler;
-import sh4re_v2.sh4re_v2.security.Jwt.JwtAuthenticationEntryPoint;
-import sh4re_v2.sh4re_v2.security.Jwt.JwtAuthenticationFilter;
+import sh4re_v2.sh4re_v2.security.jwt.JwtAuthenticationEntryPoint;
+import sh4re_v2.sh4re_v2.security.jwt.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -42,6 +41,8 @@ public class SecurityConfig {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .authorizeHttpRequests(authorize -> {
+          authorize
+              .requestMatchers("/test/teacher").hasRole("TEACHER");
           securityPathConfig.getAuthenticatedEndpoints().forEach(endpoint -> {
             if (endpoint.getMethod() != null) {
               authorize.requestMatchers(endpoint.getMethod(), endpoint.getPattern()).authenticated();
@@ -56,7 +57,7 @@ public class SecurityConfig {
               authorize.requestMatchers(endpoint.getPattern()).permitAll();
             }
           });
-          authorize.requestMatchers("/test/teacher").hasRole("TEACHER").anyRequest().authenticated();
+          authorize.anyRequest().authenticated();
         });
 
     // Add JWT filter
