@@ -30,10 +30,13 @@ public class User extends Base {
   private int grade;
 
   @Column(nullable = false)
-  private int classNo;
+  private int classNumber;
 
   @Column(nullable = false)
-  private int studentNo;
+  private int studentNumber;
+
+  @Column(nullable = false)
+  private int admissionYear;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -48,8 +51,8 @@ public class User extends Base {
       String email,
       String name,
       int grade,
-      int classNo,
-      int studentNo,
+      int classNumber,
+      int studentNumber,
       School school
   ) {
     this.username = username;
@@ -57,8 +60,8 @@ public class User extends Base {
     this.email = email;
     this.name = name;
     this.grade = grade;
-    this.classNo = classNo;
-    this.studentNo = studentNo;
+    this.classNumber = classNumber;
+    this.studentNumber = studentNumber;
     this.school = school;
   }
 }
