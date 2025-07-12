@@ -1,5 +1,6 @@
 package sh4re_v2.sh4re_v2.domain.main;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -19,14 +20,18 @@ public class School extends Base {
   String code;
 
   @NotBlank
+  @JsonIgnore
   String dbUrl;
 
   @NotBlank
+  @JsonIgnore
   String dbUsername;
 
   @NotBlank
+  @JsonIgnore
   String dbPassword;
 
   @NotBlank
+  @JsonIgnore
   String tenantId;
 }

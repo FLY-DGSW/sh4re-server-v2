@@ -1,14 +1,7 @@
 package sh4re_v2.sh4re_v2.domain.main;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ManyToOne;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,35 +12,46 @@ import sh4re_v2.sh4re_v2.security.Role;
 @Setter
 @NoArgsConstructor
 public class User extends Base {
-  @NotBlank
+
+  @Column(nullable = false, length = 12, unique = true)
   private String username;
 
-  @NotBlank
   @JsonIgnore
+  @Column(nullable = false, length = 255)
   private String password;
 
-  @NotBlank
+  @Column(nullable = false, length = 255, unique = true)
   private String email;
 
-  @NotBlank
+  @Column(nullable = false, length = 10)
   private String name;
 
-  @NotNull
+  @Column(nullable = false)
   private int grade;
 
-  @NotNull
+  @Column(nullable = false)
   private int classNo;
 
-  @NotNull
+  @Column(nullable = false)
   private int studentNo;
 
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private Role role = Role.STUDENT; // Default role
 
   @ManyToOne(fetch = FetchType.EAGER, optional = false)
-  School school;
+  private School school;
 
-  public User(String username, String password, String email, String name, int grade, int classNo, int studentNo, School school) {
+  public User(
+      String username,
+      String password,
+      String email,
+      String name,
+      int grade,
+      int classNo,
+      int studentNo,
+      School school
+  ) {
     this.username = username;
     this.password = password;
     this.email = email;
@@ -57,5 +61,4 @@ public class User extends Base {
     this.studentNo = studentNo;
     this.school = school;
   }
-
 }

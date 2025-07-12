@@ -2,14 +2,18 @@ package sh4re_v2.sh4re_v2.dto.login;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Length;
+import sh4re_v2.sh4re_v2.validation.annotation.ValidPassword;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record LoginReq(
-    @NotBlank
-    @Length(message = "username은 4~16글자 사이여야 합니다.", min = 4, max = 16)
+    @NotBlank(message = "아이디는 필수 입력 항목입니다.")
+    @Length(min = 4, max = 12, message = "아이디는 4자 이상 12자 이하여야 합니다.")
+    @Pattern(regexp = "^[a-z0-9]+$", message = "아이디는 소문자 영어와 숫자만 포함해야 합니다.")
     String username,
-    @NotBlank
-    @Length(message = "password는 8~24글자 사이여야 합니다.", min = 8, max = 24)
+
+    @NotBlank(message = "비밀번호는 필수 입력 항목입니다.")
+    @ValidPassword
     String password
 ) {}
