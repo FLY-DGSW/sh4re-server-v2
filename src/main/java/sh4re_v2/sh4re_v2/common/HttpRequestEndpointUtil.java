@@ -7,10 +7,13 @@ import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerMapping;
+import sh4re_v2.sh4re_v2.config.SecurityPathConfig;
+import sh4re_v2.sh4re_v2.config.SecurityPathConfig.EndpointConfig;
 import sh4re_v2.sh4re_v2.dto.BaseRes;
 import sh4re_v2.sh4re_v2.exception.ErrorResponse;
 import sh4re_v2.sh4re_v2.exception.error_code.CommonStatusCode;
@@ -38,13 +41,24 @@ public class HttpRequestEndpointUtil {
   }
 
   private boolean isEndpointExist(HttpServletRequest request) {
-    List<HandlerMapping> handlerMappings = servlet.getHandlerMappings();
-    if(handlerMappings == null) return false;
-    handlerMappings = handlerMappings.subList(0, handlerMappings.size() - 1);
-    for (HandlerMapping handlerMapping : handlerMappings) {
+    EndpointConfig[] endpointConfigs = SecurityPathConfig.endpointConfigs;
+    for (EndpointConfig config : endpointConfigs) {
       try {
-        HandlerExecutionChain foundHandler = handlerMapping.getHandler(request);
-        if (foundHandler != null) {
+        boolean isMatch;
+        if(config.getMethod() != null) {
+          isMatch = PathPatternRequestMatcher.withDefaults()
+              .matcher(
+                  config.getMethod(),
+                  config.getPattern())
+              .matches(request);
+        } else {
+          isMatch = PathPatternRequestMatcher.withDefaults()
+              .matcher(
+                  config.getPattern()
+              )
+              .matches(request);
+        }
+        if (isMatch) {
           return true;
         }
       } catch (Exception e) {

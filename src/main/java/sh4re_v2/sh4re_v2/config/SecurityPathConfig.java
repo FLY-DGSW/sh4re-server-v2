@@ -71,7 +71,9 @@ public class SecurityPathConfig {
         new EndpointConfig("/swagger-ui/**"),
         new EndpointConfig("/swagger-ui.html"),
         // Auth
-        new EndpointConfig("/api/auth/**"),
+        new EndpointConfig("/api/auth/login", HttpMethod.POST),
+        new EndpointConfig("/api/auth/register", HttpMethod.POST),
+        new EndpointConfig("/api/auth/refresh", HttpMethod.POST, true),
         new EndpointConfig("/api/auth/logout", HttpMethod.POST, true),
         // Test
         new EndpointConfig("/test/public"),
