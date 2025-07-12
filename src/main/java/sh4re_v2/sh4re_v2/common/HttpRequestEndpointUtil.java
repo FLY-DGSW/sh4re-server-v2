@@ -21,6 +21,22 @@ public class HttpRequestEndpointUtil {
   private final ObjectMapper objectMapper;
   private final DispatcherServlet servlet;
 
+  public boolean isInvalidEndpointThenSetResponse(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
+    if(!isEndpointExist(request)){
+      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+      BaseRes<?> body = new BaseRes<>(
+          false,
+          CommonStatusCode.ENDPOINT_NOT_FOUND.getCode(),
+          CommonStatusCode.ENDPOINT_NOT_FOUND.getMessage(),
+          null);
+      objectMapper.writeValue(response.getOutputStream(), body);
+      return true;
+    }
+    return false;
+  }
+
   private boolean isEndpointExist(HttpServletRequest request) {
     List<HandlerMapping> handlerMappings = servlet.getHandlerMappings();
     if(handlerMappings == null) return false;
@@ -36,21 +52,5 @@ public class HttpRequestEndpointUtil {
       }
     }
     return false;
-  }
-
-  public boolean isInvalidEndpoint(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    if(!isEndpointExist(request)){
-      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-      BaseRes<?> body = new BaseRes<>(
-          false,
-          CommonStatusCode.ENDPOINT_NOT_FOUND.getCode(),
-          CommonStatusCode.ENDPOINT_NOT_FOUND.getMessage(),
-          null);
-      objectMapper.writeValue(response.getOutputStream(), body);
-      return false;
-    }
-    return true;
   }
 }
