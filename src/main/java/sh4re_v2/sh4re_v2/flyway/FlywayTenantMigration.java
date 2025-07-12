@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.flywaydb.core.Flyway;
@@ -23,33 +24,22 @@ public class FlywayTenantMigration implements ApplicationRunner {
   public void run(ApplicationArguments args) throws SQLException {
     List<TenantConnectionInfo> tenants = tenantUtil.loadTenants(); // school1, school2, ...
     for (TenantConnectionInfo tenant : tenants) {
-      if(!hasBeenMigrated(tenant)) {
-        Flyway flyway = Flyway.configure()
-            .dataSource(tenant.getDbUrl(), tenant.getDbUsername(), tenant.getDbPassword())
-            .locations("classpath:db/migration/tenant")
-            .baselineOnMigrate(true)
-            .load();
+      Flyway flyway = Flyway.configure()
+          .dataSource(tenant.getDbUrl(), tenant.getDbUsername(), tenant.getDbPassword())
+          .locations("classpath:db/migration/tenant")
+          .load();
+
+      if(hasPendingMigrations(flyway)){
+        System.out.println("Migrating tenant: " + tenant.getTenantId());
         flyway.migrate();
       }
     }
   }
 
-  private boolean hasBeenMigrated(TenantConnectionInfo tenant) {
-    String query = "SELECT version FROM flyway_schema_history LIMIT 1";
-
-    try (
-        Connection conn = DriverManager.getConnection(
-            tenant.getDbUrl(),
-            tenant.getDbUsername(),
-            tenant.getDbPassword()
-        );
-        PreparedStatement stmt = conn.prepareStatement(query);
-        ResultSet rs = stmt.executeQuery()
-    ) {
-      return rs.next();
-    } catch (SQLException e) {
-      return false;
-    }
+  private boolean hasPendingMigrations(Flyway flyway) {
+    return Arrays.stream(flyway.info().pending())
+        .findAny()
+        .isPresent();
   }
 }
 
