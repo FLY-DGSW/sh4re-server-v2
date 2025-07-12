@@ -14,8 +14,8 @@ import lombok.RequiredArgsConstructor;
 import sh4re_v2.sh4re_v2.common.HttpRequestEndpointUtil;
 import sh4re_v2.sh4re_v2.dto.BaseRes;
 import sh4re_v2.sh4re_v2.exception.ErrorResponse;
-import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
-import sh4re_v2.sh4re_v2.exception.error_code.CommonErrorCode;
+import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
+import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 
 @Component
 @RequiredArgsConstructor
@@ -28,12 +28,17 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
   public void handle(HttpServletRequest request,
       HttpServletResponse response,
       AccessDeniedException accessDeniedException) throws IOException, ServletException {
-    if(!httpRequestEndpointUtil.isEndpointExistOrElseSetErrorResponse(request, response)) return;
+    if(httpRequestEndpointUtil.isInvalidEndpoint(request, response)) return;
 
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403
 
-    BaseRes<?> body = new BaseRes<>(false, "에러가 발생했습니다.", new ErrorResponse(AuthErrorCode.PERMISSION_DENIED.getCode(), AuthErrorCode.PERMISSION_DENIED.getMessage()));
+    BaseRes<?> body = new BaseRes<>(
+        false,
+        AuthStatusCode.PERMISSION_DENIED.getCode(),
+        AuthStatusCode.PERMISSION_DENIED.getMessage(),
+        null
+    );
     objectMapper.writeValue(response.getOutputStream(), body);
   }
 }

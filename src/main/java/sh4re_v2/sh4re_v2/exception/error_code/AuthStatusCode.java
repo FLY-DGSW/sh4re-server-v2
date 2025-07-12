@@ -3,11 +3,11 @@ package sh4re_v2.sh4re_v2.exception.error_code;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
+import sh4re_v2.sh4re_v2.exception.exception.ApplicationException;
 
 @Getter
 @RequiredArgsConstructor
-public enum AuthErrorCode implements ErrorCode {
+public enum AuthStatusCode implements StatusCode {
   INVALID_JWT("INVALID_TOKEN", "유효하지 않은 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
   EXPIRED_JWT("EXPIRED_TOKEN", "만료된 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
   UNSUPPORTED_JWT("UNSUPPORTED_JWT", "지원되지 않는 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
@@ -24,29 +24,4 @@ public enum AuthErrorCode implements ErrorCode {
   private final String code;
   private final String message;
   private final HttpStatus httpStatus;
-
-  @Override
-  public String defaultMessage() {
-    return message;
-  }
-
-  @Override
-  public HttpStatus defaultHttpStatus() {
-    return httpStatus;
-  }
-
-  @Override
-  public RuntimeException defaultException() {
-    return new BusinessException(this);
-  }
-
-  @Override
-  public RuntimeException defaultException(Throwable cause) {
-    return new BusinessException(this, cause);
-  }
-
-  @Override
-  public Exception defaultException(String message) {
-    return new BusinessException(this, message);
-  }
 }

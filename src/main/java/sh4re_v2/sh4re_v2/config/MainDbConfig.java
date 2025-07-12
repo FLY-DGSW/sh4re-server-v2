@@ -1,4 +1,4 @@
-package sh4re_v2.sh4re_v2.common;
+package sh4re_v2.sh4re_v2.config;
 
 import jakarta.persistence.EntityManagerFactory;
 import java.util.Map;

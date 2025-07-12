@@ -11,7 +11,7 @@ import org.flywaydb.core.Flyway;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import sh4re_v2.sh4re_v2.common.TenantUtil;
+import sh4re_v2.sh4re_v2.tenant.TenantUtil;
 import sh4re_v2.sh4re_v2.tenant.TenantConnectionInfo;
 
 @Component
