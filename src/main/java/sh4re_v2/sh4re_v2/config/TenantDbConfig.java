@@ -1,4 +1,4 @@
-package sh4re_v2.sh4re_v2.common;
+package sh4re_v2.sh4re_v2.config;
 
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
@@ -19,6 +19,7 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import sh4re_v2.sh4re_v2.tenant.SchoolRoutingDataSource;
 import sh4re_v2.sh4re_v2.tenant.TenantConnectionInfo;
+import sh4re_v2.sh4re_v2.tenant.TenantUtil;
 
 @Configuration
 @EnableJpaRepositories(

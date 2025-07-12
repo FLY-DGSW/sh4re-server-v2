@@ -1,4 +1,4 @@
-package sh4re_v2.sh4re_v2.common;
+package sh4re_v2.sh4re_v2.tenant;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import sh4re_v2.sh4re_v2.tenant.TenantConnectionInfo;
 
 @Component
 public class TenantUtil {
