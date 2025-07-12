@@ -25,10 +25,12 @@ import sh4re_v2.sh4re_v2.dto.logout.LogOutRes;
 import sh4re_v2.sh4re_v2.dto.refreshToken.RefreshTokenRes;
 import sh4re_v2.sh4re_v2.dto.register.RegisterReq;
 import sh4re_v2.sh4re_v2.dto.register.RegisterRes;
-import sh4re_v2.sh4re_v2.exception.error_code.AuthErrorCode;
-import sh4re_v2.sh4re_v2.exception.error_code.SchoolErrorCode;
-import sh4re_v2.sh4re_v2.exception.exception.BusinessException;
-import sh4re_v2.sh4re_v2.security.Jwt.JwtTokenProvider;
+import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
+import sh4re_v2.sh4re_v2.exception.error_code.SchoolStatusCode;
+import sh4re_v2.sh4re_v2.exception.exception.ApplicationException;
+import sh4re_v2.sh4re_v2.exception.exception.AuthException;
+import sh4re_v2.sh4re_v2.exception.exception.SchoolException;
+import sh4re_v2.sh4re_v2.security.jwt.JwtTokenProvider;
 import sh4re_v2.sh4re_v2.security.TokenStatus;
 import sh4re_v2.sh4re_v2.security.UserPrincipal;
 
@@ -86,25 +88,25 @@ public class AuthService {
       return new LoginRes(accessToken);
     } catch (BadCredentialsException e) {
       // 잘못된 자격 증명 예외 처리
-      throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
+      throw new ApplicationException(AuthStatusCode.INVALID_CREDENTIALS);
     } catch (LockedException e) {
       // 계정 잠금 예외 처리
-      throw new BusinessException(AuthErrorCode.ACCOUNT_LOCKED);
+      throw new ApplicationException(AuthStatusCode.ACCOUNT_LOCKED);
     } catch (DisabledException e) {
       // 계정 비활성화 예외 처리
-      throw new BusinessException(AuthErrorCode.ACCOUNT_DISABLED);
+      throw new ApplicationException(AuthStatusCode.ACCOUNT_DISABLED);
     } catch (Exception e) {
       // 기타 예외 처리
-      throw new BusinessException(AuthErrorCode.AUTHENTICATION_FAILED, "인증에 실패했습니다: " + e.getMessage());
+      throw new ApplicationException(AuthStatusCode.AUTHENTICATION_FAILED, "인증에 실패했습니다: " + e.getMessage());
     }
   }
 
   public RegisterRes registerUser(RegisterReq registerReq) {
     Optional<School> schoolOpt = schoolService.findByCode(registerReq.schoolCode());
-    if(schoolOpt.isEmpty()) throw SchoolErrorCode.SCHOOL_NOT_FOUND.defaultException();
+    if(schoolOpt.isEmpty()) throw SchoolException.of(SchoolStatusCode.SCHOOL_NOT_FOUND);
     // Check if username already exists
     if (userService.findByUsername(registerReq.username()).isPresent()) {
-      throw AuthErrorCode.ALREADY_EXISTS_USERNAME.defaultException();
+      throw AuthException.of(AuthStatusCode.ALREADY_EXISTS_USERNAME);
     }
 
     // Create new user
@@ -137,17 +139,17 @@ public class AuthService {
 
     // 2. Refresh Token 검증
     if (refreshToken == null || jwtTokenProvider.validateToken(refreshToken) != TokenStatus.AUTHENTICATED) {
-      throw AuthErrorCode.INVALID_JWT.defaultException();
+      throw AuthException.of(AuthStatusCode.INVALID_JWT);
     }
 
     String username = jwtTokenProvider.extractUsername(refreshToken);
     if (!refreshTokenService.isRefreshTokenValid(username, refreshToken)) {
-      throw AuthErrorCode.INVALID_JWT.defaultException();
+      throw AuthException.of(AuthStatusCode.INVALID_JWT);
     }
 
     // 3. 새 Access Token 발급
     Optional<User> user = userService.findByUsername(username);
-    if(user.isEmpty()) throw AuthErrorCode.INVALID_JWT.defaultException();
+    if(user.isEmpty()) throw AuthException.of(AuthStatusCode.INVALID_JWT);
     String newAccessToken = jwtTokenProvider.generateAccessToken(user.get());
 
     // 4. 필요시 새 Refresh Token도 발급 & 쿠키에 저장 (옵션)
