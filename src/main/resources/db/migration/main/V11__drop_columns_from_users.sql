@@ -1,0 +1,8 @@
+BEGIN;
+
+ALTER TABLE IF EXISTS users
+    DROP COLUMN IF EXISTS grade,
+    DROP COLUMN IF EXISTS class_number,
+    DROP COLUMN IF EXISTS student_number;
+
+COMMIT;
