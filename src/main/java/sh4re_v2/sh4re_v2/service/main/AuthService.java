@@ -3,13 +3,9 @@ package sh4re_v2.sh4re_v2.service.main;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,8 +13,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sh4re_v2.sh4re_v2.context.TenantContext;
 import sh4re_v2.sh4re_v2.domain.main.School;
 import sh4re_v2.sh4re_v2.domain.main.User;
+import sh4re_v2.sh4re_v2.domain.tenant.ClassPlacement;
 import sh4re_v2.sh4re_v2.dto.login.LoginReq;
 import sh4re_v2.sh4re_v2.dto.login.LoginRes;
 import sh4re_v2.sh4re_v2.dto.logout.LogOutRes;
@@ -30,8 +28,8 @@ import sh4re_v2.sh4re_v2.exception.error_code.SchoolStatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.exception.exception.SchoolException;
 import sh4re_v2.sh4re_v2.security.jwt.JwtTokenProvider;
-import sh4re_v2.sh4re_v2.security.TokenStatus;
 import sh4re_v2.sh4re_v2.security.UserPrincipal;
+import sh4re_v2.sh4re_v2.service.tenant.ClassPlacementService;
 
 @Service
 @Transactional(transactionManager="mainTransactionManager")
@@ -43,6 +41,7 @@ public class AuthService {
   private final UserService userService;
   private final SchoolService schoolService;
   private final RefreshTokenService refreshTokenService;
+  private final ClassPlacementService classPlacementService;
   @Value("${cookie.domain:localhost}")
   private String COOKIE_DOMAIN;
   private static final String COOKIE_PATH = "/";
@@ -98,10 +97,21 @@ public class AuthService {
         .orElseThrow(() -> SchoolException.of(SchoolStatusCode.SCHOOL_NOT_FOUND));
 
     // Create User Entity
-    User user = registerReq.toEntity(passwordEncoder, school);
+    User user = registerReq.toUserEntity(passwordEncoder, school);
 
     // Save the user (register)
     userService.save(user);
+
+    // Create ClassPlacement Entity
+    ClassPlacement classPlacement = registerReq.toClassPlacement(
+        user.getId()
+    );
+
+    // Set Tenant ID
+    TenantContext.setTenantId(user.getSchool().getTenantId());
+
+    // Save the classPlacement
+    classPlacementService.save(classPlacement);
 
     // return a response
     return new RegisterRes(user.getId());

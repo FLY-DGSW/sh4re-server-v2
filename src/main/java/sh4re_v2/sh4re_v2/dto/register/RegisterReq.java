@@ -11,6 +11,7 @@ import org.hibernate.validator.constraints.Length;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import sh4re_v2.sh4re_v2.domain.main.School;
 import sh4re_v2.sh4re_v2.domain.main.User;
+import sh4re_v2.sh4re_v2.domain.tenant.ClassPlacement;
 import sh4re_v2.sh4re_v2.validation.annotation.ValidPassword;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -45,27 +46,35 @@ public record RegisterReq(
   @NotNull(message = "반 번호는 필수 입력 항목입니다.")
   @Min(value = 1, message = "반 번호는 1 이상이어야 합니다.")
   @Max(value = 99, message = "반 번호는 99 이하여야 합니다.")
-  int classNo,
+  int classNumber,
 
   @NotNull(message = "번호는 필수 입력 항목입니다.")
   @Min(value = 1, message = "번호는 1 이상이어야 합니다.")
   @Max(value = 99, message = "번호는 99 이하여야 합니다.")
-  int studentNo,
+  int studentNumber,
 
   @NotBlank(message = "학교 코드는 필수 입력값입니다.")
   String schoolCode
 ) {
-  public User toEntity(PasswordEncoder passwordEncoder, School school) {
+  public User toUserEntity(PasswordEncoder passwordEncoder, School school) {
 
     return new User(
         username(),
         passwordEncoder.encode(password()),
         email(),
         name(),
-        grade(),
-        classNo(),
-        studentNo(),
         school
+    );
+  }
+
+  public ClassPlacement toClassPlacement(
+      Long userId
+  ) {
+    return new ClassPlacement(
+        userId,
+        grade(),
+        classNumber(),
+        studentNumber()
     );
   }
 }

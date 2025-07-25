@@ -2,6 +2,7 @@ package sh4re_v2.sh4re_v2.domain.main;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,15 +28,6 @@ public class User extends Base {
   private String name;
 
   @Column(nullable = false)
-  private int grade;
-
-  @Column(nullable = false)
-  private int classNumber;
-
-  @Column(nullable = false)
-  private int studentNumber;
-
-  @Column(nullable = false)
   private int admissionYear;
 
   @Enumerated(EnumType.STRING)
@@ -50,18 +42,13 @@ public class User extends Base {
       String password,
       String email,
       String name,
-      int grade,
-      int classNumber,
-      int studentNumber,
       School school
   ) {
     this.username = username;
     this.password = password;
     this.email = email;
     this.name = name;
-    this.grade = grade;
-    this.classNumber = classNumber;
-    this.studentNumber = studentNumber;
     this.school = school;
+    this.admissionYear = LocalDate.now().getYear();
   }
 }
