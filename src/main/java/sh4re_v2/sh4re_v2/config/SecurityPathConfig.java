@@ -85,5 +85,7 @@ public class SecurityPathConfig {
         new EndpointConfig("/user/me", HttpMethod.GET, true),
         // Subject
         new EndpointConfig("/subject", HttpMethod.GET, true),
+        new EndpointConfig("/subject", HttpMethod.POST, true, teacher),
+        new EndpointConfig("/subject", HttpMethod.PATCH, true, teacher),
     };
 }
