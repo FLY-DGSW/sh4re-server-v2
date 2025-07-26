@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import sh4re_v2.sh4re_v2.dto.login.LoginReq;
-import sh4re_v2.sh4re_v2.dto.login.LoginRes;
-import sh4re_v2.sh4re_v2.dto.logout.LogOutRes;
-import sh4re_v2.sh4re_v2.dto.refreshToken.RefreshTokenRes;
-import sh4re_v2.sh4re_v2.dto.register.RegisterReq;
-import sh4re_v2.sh4re_v2.dto.register.RegisterRes;
+import sh4re_v2.sh4re_v2.dto.auth.login.LoginReq;
+import sh4re_v2.sh4re_v2.dto.auth.login.LoginRes;
+import sh4re_v2.sh4re_v2.dto.auth.logout.LogOutRes;
+import sh4re_v2.sh4re_v2.dto.auth.refreshToken.RefreshTokenRes;
+import sh4re_v2.sh4re_v2.dto.auth.register.RegisterReq;
+import sh4re_v2.sh4re_v2.dto.auth.register.RegisterRes;
 import sh4re_v2.sh4re_v2.service.main.AuthService;
 
 @RestController

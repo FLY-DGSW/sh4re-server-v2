@@ -1,4 +1,4 @@
-package sh4re_v2.sh4re_v2.dto.login;
+package sh4re_v2.sh4re_v2.dto.auth.login;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;

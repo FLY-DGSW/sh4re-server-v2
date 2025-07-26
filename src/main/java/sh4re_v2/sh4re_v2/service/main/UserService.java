@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sh4re_v2.sh4re_v2.common.UserAuthenticationHolder;
 import sh4re_v2.sh4re_v2.domain.main.User;
-import sh4re_v2.sh4re_v2.dto.getMyInfo.GetMyInfoRes;
+import sh4re_v2.sh4re_v2.dto.auth.getMyInfo.GetMyInfoRes;
 import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.repository.main.UserRepository;
