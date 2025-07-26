@@ -87,5 +87,6 @@ public class SecurityPathConfig {
         new EndpointConfig("/subject", HttpMethod.GET, true),
         new EndpointConfig("/subject", HttpMethod.POST, true, teacher),
         new EndpointConfig("/subject", HttpMethod.PATCH, true, teacher),
+        new EndpointConfig("/subject", HttpMethod.DELETE, true, teacher),
     };
 }

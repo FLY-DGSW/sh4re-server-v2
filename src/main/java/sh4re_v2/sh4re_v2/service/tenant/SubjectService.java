@@ -9,11 +9,13 @@ import sh4re_v2.sh4re_v2.common.UserAuthenticationHolder;
 import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.domain.tenant.ClassPlacement;
 import sh4re_v2.sh4re_v2.domain.tenant.Subject;
-import sh4re_v2.sh4re_v2.dto.createSubject.CreateSubjectReq;
-import sh4re_v2.sh4re_v2.dto.createSubject.CreateSubjectRes;
-import sh4re_v2.sh4re_v2.dto.getAllSubjects.GetAllSubjectsRes;
-import sh4re_v2.sh4re_v2.dto.updateSubject.UpdateSubjectReq;
-import sh4re_v2.sh4re_v2.dto.updateSubject.UpdateSubjectRes;
+import sh4re_v2.sh4re_v2.dto.subject.createSubject.CreateSubjectReq;
+import sh4re_v2.sh4re_v2.dto.subject.createSubject.CreateSubjectRes;
+import sh4re_v2.sh4re_v2.dto.subject.deleteSubject.DeleteSubjectReq;
+import sh4re_v2.sh4re_v2.dto.subject.deleteSubject.DeleteSubjectRes;
+import sh4re_v2.sh4re_v2.dto.subject.getAllSubjects.GetAllSubjectsRes;
+import sh4re_v2.sh4re_v2.dto.subject.updateSubject.UpdateSubjectReq;
+import sh4re_v2.sh4re_v2.dto.subject.updateSubject.UpdateSubjectRes;
 import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.error_code.ClassPlacementStatusCode;
 import sh4re_v2.sh4re_v2.exception.error_code.SubjectStatusCode;
@@ -36,6 +38,10 @@ public class SubjectService {
 
   public Optional<Subject> findById(Long id) {
     return subjectRepository.findById(id);
+  }
+
+  public void deleteById(Long id) {
+    subjectRepository.deleteById(id);
   }
 
   public GetAllSubjectsRes getAllSubjects() {
@@ -68,5 +74,15 @@ public class SubjectService {
     Subject newSubject = req.toEntity(subject);
     this.save(newSubject);
     return new UpdateSubjectRes(newSubject.getId());
+  }
+
+  public DeleteSubjectRes deleteSubject(DeleteSubjectReq req) {
+    User user = holder.current();
+    Optional<Subject> subjectOpt = this.findById(req.id());
+    if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
+    Subject subject = subjectOpt.get();
+    if(!subject.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    this.deleteById(req.id());
+    return new DeleteSubjectRes(subject.getId());
   }
 }
