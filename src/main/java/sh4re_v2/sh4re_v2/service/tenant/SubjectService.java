@@ -14,8 +14,10 @@ import sh4re_v2.sh4re_v2.dto.createSubject.CreateSubjectRes;
 import sh4re_v2.sh4re_v2.dto.getAllSubjects.GetAllSubjectsRes;
 import sh4re_v2.sh4re_v2.dto.updateSubject.UpdateSubjectReq;
 import sh4re_v2.sh4re_v2.dto.updateSubject.UpdateSubjectRes;
+import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.error_code.ClassPlacementStatusCode;
 import sh4re_v2.sh4re_v2.exception.error_code.SubjectStatusCode;
+import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.exception.exception.ClassPlacementException;
 import sh4re_v2.sh4re_v2.exception.exception.SubjectException;
 import sh4re_v2.sh4re_v2.repository.tenant.SubjectRepository;
@@ -58,9 +60,11 @@ public class SubjectService {
   }
 
   public UpdateSubjectRes updateSubject(UpdateSubjectReq req) {
+    User user = holder.current();
     Optional<Subject> subjectOpt = this.findById(req.id());
     if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
     Subject subject = subjectOpt.get();
+    if(!subject.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     Subject newSubject = req.toEntity(subject);
     this.save(newSubject);
     return new UpdateSubjectRes(newSubject.getId());

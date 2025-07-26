@@ -32,5 +32,5 @@ public class Subject extends Base {
   private Integer classNumber;
 
   @NotNull
-  private Long userId; // flyway 추가 및 createSubject 마저 만들기
+  private Long userId;
 }
