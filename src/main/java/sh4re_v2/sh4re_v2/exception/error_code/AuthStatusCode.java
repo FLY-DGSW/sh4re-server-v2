@@ -19,7 +19,8 @@ public enum AuthStatusCode implements StatusCode {
   ALREADY_EXISTS_USERNAME("ALREADY_EXISTS_USERNAME", "해당 아이디를 가진 유저가 이미 존재합니다.", HttpStatus.BAD_REQUEST),
   ALREADY_LOGGED_OUT_USER("ALREADY_LOGGED_OUT_USER", "이미 로그아웃된 계정입니다.", HttpStatus.BAD_REQUEST),
   AUTHENTICATION_FAILED("AUTHENTICATION_FAILED", "인증에 실패하였습니다.", HttpStatus.UNAUTHORIZED),
-  PERMISSION_DENIED("PERMISSION_DENIED", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN),;
+  PERMISSION_DENIED("PERMISSION_DENIED", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
+  LOGIN_REQUIRED("LOGIN_REQUIRED", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),;
 
   private final String code;
   private final String message;

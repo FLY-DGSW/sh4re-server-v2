@@ -1,6 +1,7 @@
 package sh4re_v2.sh4re_v2.security;
 
 import java.util.function.Supplier;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,7 +30,7 @@ public class AuthorityChecker {
               .anyMatch(r -> r.equals(role)));
       return new AuthorizationDecision(hasRole);
     } else {
-      return new AuthorizationDecision(auth.get().isAuthenticated());
+      return new AuthorizationDecision(!(auth.get() instanceof AnonymousAuthenticationToken));
     }
   };
 }
