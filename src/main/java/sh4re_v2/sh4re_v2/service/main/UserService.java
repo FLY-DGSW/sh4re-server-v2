@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sh4re_v2.sh4re_v2.common.UserAuthenticationHolder;
 import sh4re_v2.sh4re_v2.domain.main.User;
-import sh4re_v2.sh4re_v2.dto.auth.getMyInfo.GetMyInfoRes;
+import sh4re_v2.sh4re_v2.dto.user.getMyInfo.GetMyInfoRes;
+import sh4re_v2.sh4re_v2.dto.user.setTheme.SetThemeReq;
+import sh4re_v2.sh4re_v2.dto.user.setTheme.SetThemeRes;
 import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.repository.main.UserRepository;
@@ -34,6 +36,13 @@ public class UserService {
   public GetMyInfoRes getMyInfo() {
     User user = holder.current();
     return new GetMyInfoRes(user);
+  }
+
+  public SetThemeRes setTheme(SetThemeReq setThemeReq) {
+    User user = holder.current();
+    user.setTheme(setThemeReq.getThemeEnum());
+    this.save(user);
+    return new SetThemeRes();
   }
 
   public void validateUsername(String username) {

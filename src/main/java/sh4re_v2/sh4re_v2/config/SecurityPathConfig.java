@@ -73,7 +73,7 @@ public class SecurityPathConfig {
         // Auth
         new EndpointConfig("/api/auth/login", HttpMethod.POST),
         new EndpointConfig("/api/auth/register", HttpMethod.POST),
-        new EndpointConfig("/api/auth/refresh", HttpMethod.POST, true),
+        new EndpointConfig("/api/auth/refresh", HttpMethod.POST),
         new EndpointConfig("/api/auth/logout", HttpMethod.POST, true),
         // Test
         new EndpointConfig("/test/public"),
@@ -83,6 +83,7 @@ public class SecurityPathConfig {
         new EndpointConfig("/school/**", null, true, teacher),
         // User
         new EndpointConfig("/user/me", HttpMethod.GET, true),
+        new EndpointConfig("/user/theme", HttpMethod.POST, true),
         // Subject
         new EndpointConfig("/subject", HttpMethod.GET, true),
         new EndpointConfig("/subject", HttpMethod.POST, true, teacher),
