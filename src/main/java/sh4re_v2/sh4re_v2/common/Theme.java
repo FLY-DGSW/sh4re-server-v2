@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Theme {
   DARK("dark"),
-  WHITE("white");
+  LIGHT("light");
 
   private final String name;
 }

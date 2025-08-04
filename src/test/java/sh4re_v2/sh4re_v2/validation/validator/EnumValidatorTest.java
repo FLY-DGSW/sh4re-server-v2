@@ -32,8 +32,8 @@ class EnumValidatorTest {
     @Test
     void isValid_validValue_returnsTrue() {
         // Test with valid values
-        assertTrue(validator.isValid("WHITE", context));
-        assertTrue(validator.isValid("white", context));
+        assertTrue(validator.isValid("LIGHT", context));
+        assertTrue(validator.isValid("light", context));
         assertTrue(validator.isValid("DARK", context));
         assertTrue(validator.isValid("dark", context));
     }

@@ -37,7 +37,7 @@ public class User extends Base {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Theme theme = Theme.WHITE;
+  private Theme theme = Theme.LIGHT;
 
   @ManyToOne(fetch = FetchType.EAGER, optional = false)
   private School school;

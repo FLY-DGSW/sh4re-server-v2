@@ -25,11 +25,11 @@ class SetThemeReqTest {
     @Test
     void validThemeName_noViolations() {
         // Test with valid theme names
-        SetThemeReq req1 = new SetThemeReq("WHITE");
+        SetThemeReq req1 = new SetThemeReq("LIGHT");
         Set<ConstraintViolation<SetThemeReq>> violations1 = validator.validate(req1);
         assertTrue(violations1.isEmpty());
 
-        SetThemeReq req2 = new SetThemeReq("white");
+        SetThemeReq req2 = new SetThemeReq("light");
         Set<ConstraintViolation<SetThemeReq>> violations2 = validator.validate(req2);
         assertTrue(violations2.isEmpty());
 
@@ -49,7 +49,7 @@ class SetThemeReqTest {
         Set<ConstraintViolation<SetThemeReq>> violations = validator.validate(req);
         assertFalse(violations.isEmpty());
         assertEquals(1, violations.size());
-        assertEquals("Invalid value. This is not permitted.", violations.iterator().next().getMessage());
+        assertEquals("잘못된 값입니다. 정확한 값을 입력해 주세요.", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -65,11 +65,11 @@ class SetThemeReqTest {
     @Test
     void getThemeEnum_validThemeName_returnsCorrectEnum() {
         // Test getThemeEnum with valid theme name
-        SetThemeReq req1 = new SetThemeReq("WHITE");
-        assertEquals(Theme.WHITE, req1.getThemeEnum());
+        SetThemeReq req1 = new SetThemeReq("LIGHT");
+        assertEquals(Theme.LIGHT, req1.getThemeEnum());
 
-        SetThemeReq req2 = new SetThemeReq("white");
-        assertEquals(Theme.WHITE, req2.getThemeEnum());
+        SetThemeReq req2 = new SetThemeReq("light");
+        assertEquals(Theme.LIGHT, req2.getThemeEnum());
 
         SetThemeReq req3 = new SetThemeReq("DARK");
         assertEquals(Theme.DARK, req3.getThemeEnum());
