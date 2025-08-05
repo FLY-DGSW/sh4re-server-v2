@@ -6,16 +6,13 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import sh4re_v2.sh4re_v2.common.HttpRequestEndpointUtil;
 import sh4re_v2.sh4re_v2.dto.BaseRes;
-import sh4re_v2.sh4re_v2.exception.ErrorResponse;
-import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
-import sh4re_v2.sh4re_v2.exception.exception.AuthException;
+import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 
 @Component
 @RequiredArgsConstructor

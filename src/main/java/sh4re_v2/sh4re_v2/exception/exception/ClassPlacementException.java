@@ -1,7 +1,7 @@
 package sh4re_v2.sh4re_v2.exception.exception;
 
 import lombok.Getter;
-import sh4re_v2.sh4re_v2.exception.error_code.StatusCode;
+import sh4re_v2.sh4re_v2.exception.status_code.StatusCode;
 
 @Getter
 public class ClassPlacementException extends ApplicationException {

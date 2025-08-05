@@ -9,7 +9,7 @@ import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.dto.user.getMyInfo.GetMyInfoRes;
 import sh4re_v2.sh4re_v2.dto.user.setTheme.SetThemeReq;
 import sh4re_v2.sh4re_v2.dto.user.setTheme.SetThemeRes;
-import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
+import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.repository.main.UserRepository;
 

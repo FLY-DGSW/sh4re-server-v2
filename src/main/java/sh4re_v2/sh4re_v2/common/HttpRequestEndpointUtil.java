@@ -4,19 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.DispatcherServlet;
-import org.springframework.web.servlet.HandlerExecutionChain;
-import org.springframework.web.servlet.HandlerMapping;
 import sh4re_v2.sh4re_v2.config.SecurityPathConfig;
 import sh4re_v2.sh4re_v2.config.SecurityPathConfig.EndpointConfig;
 import sh4re_v2.sh4re_v2.dto.BaseRes;
-import sh4re_v2.sh4re_v2.exception.ErrorResponse;
-import sh4re_v2.sh4re_v2.exception.error_code.CommonStatusCode;
+import sh4re_v2.sh4re_v2.exception.status_code.CommonStatusCode;
 
 @Component
 @RequiredArgsConstructor

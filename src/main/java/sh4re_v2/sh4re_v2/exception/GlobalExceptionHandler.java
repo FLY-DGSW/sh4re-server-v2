@@ -1,10 +1,7 @@
 package sh4re_v2.sh4re_v2.exception;
 
-import jakarta.security.auth.message.AuthStatus;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -14,10 +11,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import sh4re_v2.sh4re_v2.dto.BaseRes;
-import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
-import sh4re_v2.sh4re_v2.exception.error_code.CommonStatusCode;
-import sh4re_v2.sh4re_v2.exception.error_code.StatusCode;
-import sh4re_v2.sh4re_v2.exception.error_code.TenantStatusCode;
+import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
+import sh4re_v2.sh4re_v2.exception.status_code.CommonStatusCode;
+import sh4re_v2.sh4re_v2.exception.status_code.StatusCode;
+import sh4re_v2.sh4re_v2.exception.status_code.TenantStatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.ApplicationException;
 
 @Slf4j

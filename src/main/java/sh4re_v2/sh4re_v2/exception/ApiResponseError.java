@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.time.Instant;
 import java.util.List;
 import lombok.Builder;
-import sh4re_v2.sh4re_v2.exception.error_code.StatusCode;
+import sh4re_v2.sh4re_v2.exception.status_code.StatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.ApplicationException;
 
 /**

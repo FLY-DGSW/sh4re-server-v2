@@ -15,12 +15,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import sh4re_v2.sh4re_v2.common.HttpRequestEndpointUtil;
 import sh4re_v2.sh4re_v2.dto.BaseRes;
-import sh4re_v2.sh4re_v2.exception.ErrorResponse;
-import sh4re_v2.sh4re_v2.exception.error_code.AuthStatusCode;
-import sh4re_v2.sh4re_v2.exception.error_code.CommonStatusCode;
-import sh4re_v2.sh4re_v2.exception.error_code.StatusCode;
+import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
+import sh4re_v2.sh4re_v2.exception.status_code.StatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.ApplicationException;
-import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 
 @Slf4j
 @Component
