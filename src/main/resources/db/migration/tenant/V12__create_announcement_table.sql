@@ -1,0 +1,13 @@
+CREATE TABLE announcement (
+    id SERIAL PRIMARY KEY,
+    label VARCHAR(256) NOT NULL,
+    title VARCHAR(256) NOT NULL,
+    author VARCHAR(256) NOT NULL,
+    content TEXT NOT NULL,
+    school_year INTEGER NOT NULL,
+    grade INTEGER NOT NULL,
+    class_number INTEGER NOT NULL,
+    user_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
