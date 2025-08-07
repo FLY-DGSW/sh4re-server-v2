@@ -1,8 +1,8 @@
 CREATE TABLE announcement (
     id SERIAL PRIMARY KEY,
-    label VARCHAR(256) NOT NULL,
-    title VARCHAR(256) NOT NULL,
-    author VARCHAR(256) NOT NULL,
+    label VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     school_year INTEGER NOT NULL,
     grade INTEGER NOT NULL,
