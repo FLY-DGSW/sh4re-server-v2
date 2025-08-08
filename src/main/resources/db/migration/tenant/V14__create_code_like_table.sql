@@ -1,0 +1,8 @@
+CREATE TABLE code_like (
+    id BIGSERIAL PRIMARY KEY,
+    code_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(code_id, user_id)
+);
