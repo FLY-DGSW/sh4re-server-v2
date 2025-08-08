@@ -1,0 +1,14 @@
+CREATE TABLE code (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    student VARCHAR(255) NOT NULL,
+    language VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    code TEXT NOT NULL,
+    class_name VARCHAR(255) NOT NULL,
+    assignment VARCHAR(255) NOT NULL,
+    school_year INTEGER NOT NULL,
+    user_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
