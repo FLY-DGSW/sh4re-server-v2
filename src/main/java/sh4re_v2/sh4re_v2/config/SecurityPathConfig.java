@@ -91,14 +91,14 @@ public class SecurityPathConfig {
         new EndpointConfig("/subject", HttpMethod.DELETE, true, teacher),
         // Announcements
         new EndpointConfig("/announcements", HttpMethod.GET, true),
-        new EndpointConfig("/announcements/{announcementId}", HttpMethod.GET, true),
         new EndpointConfig("/announcements", HttpMethod.POST, true, teacher),
+        new EndpointConfig("/announcements/{announcementId}", HttpMethod.GET, true),
         new EndpointConfig("/announcements/{announcementId}", HttpMethod.PATCH, true, teacher),
         new EndpointConfig("/announcements/{announcementId}", HttpMethod.DELETE, true, teacher),
         // Codes
         new EndpointConfig("/codes", HttpMethod.GET, true),
-        new EndpointConfig("/codes/{codeId}", HttpMethod.GET, true),
         new EndpointConfig("/codes", HttpMethod.POST, true),
+        new EndpointConfig("/codes/{codeId}", HttpMethod.GET, true),
         new EndpointConfig("/codes/{codeId}", HttpMethod.PATCH, true),
         new EndpointConfig("/codes/{codeId}", HttpMethod.DELETE, true),
         new EndpointConfig("/codes/{codeId}/like", HttpMethod.POST, true),

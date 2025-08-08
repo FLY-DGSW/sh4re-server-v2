@@ -1,20 +1,15 @@
 package sh4re_v2.sh4re_v2.exception.status_code;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-@AllArgsConstructor
 @Getter
+@RequiredArgsConstructor
 public enum CodeStatusCode implements StatusCode {
-  CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "CODE_001", "코드를 찾을 수 없습니다.");
+  CODE_NOT_FOUND("CODE_NOT_FOUND", "코드를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
 
-  private final HttpStatus httpStatus;
-  private final String statusCode;
+  private final String code;
   private final String message;
-
-  @Override
-  public String getCode() {
-    return statusCode;
-  }
+  private final HttpStatus httpStatus;
 }

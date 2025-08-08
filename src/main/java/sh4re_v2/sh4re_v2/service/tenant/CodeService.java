@@ -59,7 +59,7 @@ public class CodeService {
 
   public CreateCodeRes createCode(CreateCodeReq req) {
     User user = holder.current();
-    Code newCode = req.toEntity(user.getId());
+    Code newCode = req.toEntity(user.getId(), user.getName());
     this.save(newCode);
     return new CreateCodeRes(newCode.getId());
   }
