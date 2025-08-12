@@ -44,15 +44,20 @@ public class AuthService {
   private final ClassPlacementService classPlacementService;
   @Value("${cookie.domain:localhost}")
   private String COOKIE_DOMAIN;
+  @Value("${cookie.secure:false}")
+  private boolean COOKIE_SECURE;
+  @Value("${cookie.same-site:Lax}")
+  private String COOKIE_SAME_SITE;
   private static final String COOKIE_PATH = "/";
   private static final int COOKIE_MAX_AGE = 60 * 60 * 60 * 24 * 30;
 
-  private Cookie createCookie(String name, String value, boolean isSecure) {
+  private Cookie createCookie(String name, String value) {
     Cookie cookie = new Cookie(name, value);
     cookie.setDomain(COOKIE_DOMAIN);
     cookie.setPath(COOKIE_PATH);
     cookie.setMaxAge(COOKIE_MAX_AGE);
-    cookie.setSecure(isSecure);
+    cookie.setSecure(COOKIE_SECURE);
+    cookie.setHttpOnly(true);
     return cookie;
   }
 
@@ -80,7 +85,7 @@ public class AuthService {
     refreshTokenService.saveOrUpdateRefreshToken(user.getUsername(), refreshToken);
 
     // 쿠키 설정
-    Cookie refreshCookie = createCookie("refreshToken", refreshToken, true);
+    Cookie refreshCookie = createCookie("refreshToken", refreshToken);
     response.addCookie(refreshCookie);
 
     // 응답 객체 생성 및 반환
@@ -135,7 +140,7 @@ public class AuthService {
 
     // 4. 새 Refresh Token 발급 & 쿠키에 저장
     String newRefreshToken = jwtTokenProvider.generateNewRefreshToken(user);
-    response.addCookie(createCookie("refreshToken", newRefreshToken, true));
+    response.addCookie(createCookie("refreshToken", newRefreshToken));
 
     return new RefreshTokenRes(newAccessToken);
   }

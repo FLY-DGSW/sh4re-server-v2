@@ -150,11 +150,17 @@ public class JwtTokenProvider {
 
   public String getRefreshTokenFromRequest(HttpServletRequest request) {
     String refreshToken = null;
-    for (Cookie cookie : request.getCookies()) {
-      if (cookie.getName().equals("refreshToken")) {
-        refreshToken = cookie.getValue();
+    Cookie[] cookies = request.getCookies();
+    
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if (cookie.getName().equals("refreshToken")) {
+          refreshToken = cookie.getValue();
+          break;
+        }
       }
     }
+    
     if(refreshToken == null) throw AuthException.of(AuthStatusCode.INVALID_JWT);
     return refreshToken;
   }
