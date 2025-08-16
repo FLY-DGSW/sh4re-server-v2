@@ -24,6 +24,7 @@ import sh4re_v2.sh4re_v2.exception.exception.ClassPlacementException;
 import sh4re_v2.sh4re_v2.exception.exception.CodeException;
 import sh4re_v2.sh4re_v2.repository.tenant.CodeRepository;
 import sh4re_v2.sh4re_v2.repository.tenant.CodeLikeRepository;
+import sh4re_v2.sh4re_v2.service.main.OpenAIService;
 
 @Service
 @Transactional(transactionManager = "tenantTransactionManager")
@@ -33,6 +34,7 @@ public class CodeService {
   private final CodeLikeRepository codeLikeRepository;
   private final UserAuthenticationHolder holder;
   private final ClassPlacementService classPlacementService;
+  private final OpenAIService openAIService;
 
   public Code save(Code code) {
     return codeRepository.save(code);
@@ -57,7 +59,26 @@ public class CodeService {
 
   public CreateCodeResponse createCode(CreateCodeReq req) {
     User user = holder.current();
-    Code newCode = req.toEntity(user.getId(), user.getName());
+    
+    String finalDescription = req.description();
+    
+    // AI 자동 생성 옵션이 true인 경우 OpenAI로 설명 생성
+    if (Boolean.TRUE.equals(req.useAiDescription())) {
+      try {
+        String aiDescription = openAIService.generateCodeDescription(
+            req.code(), 
+            req.language(), 
+            req.assignment()
+        );
+        finalDescription = aiDescription;
+      } catch (Exception e) {
+        // AI 생성 실패시 기존 description 사용 (fallback은 OpenAIService에서 처리)
+        finalDescription = req.description();
+      }
+    }
+    
+    // 수정된 toEntity 메서드 호출
+    Code newCode = req.toEntityWithDescription(user.getId(), user.getName(), finalDescription);
     this.save(newCode);
     return new CreateCodeResponse(newCode.getId());
   }

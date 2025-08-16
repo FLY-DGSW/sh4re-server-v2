@@ -10,7 +10,8 @@ public record CreateCodeReq(
     String description,
     @NotBlank String code,
     @NotBlank String className,
-    String assignment
+    String assignment,
+    Boolean useAiDescription
 ) {
   public Code toEntity(Long userId, String studentName) {
     return Code.builder()
@@ -18,6 +19,20 @@ public record CreateCodeReq(
         .student(studentName)
         .language(language)
         .description(description)
+        .code(code)
+        .className(className)
+        .assignment(assignment)
+        .schoolYear(LocalDate.now().getYear())
+        .userId(userId)
+        .build();
+  }
+  
+  public Code toEntityWithDescription(Long userId, String studentName, String finalDescription) {
+    return Code.builder()
+        .title(title)
+        .student(studentName)
+        .language(language)
+        .description(finalDescription)
         .code(code)
         .className(className)
         .assignment(assignment)
