@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sh4re_v2.sh4re_v2.dto.auth.login.LoginReq;
 import sh4re_v2.sh4re_v2.dto.auth.login.LoginRes;
-import sh4re_v2.sh4re_v2.dto.auth.logout.LogOutRes;
 import sh4re_v2.sh4re_v2.dto.auth.refreshToken.RefreshTokenRes;
 import sh4re_v2.sh4re_v2.dto.auth.register.RegisterReq;
 import sh4re_v2.sh4re_v2.dto.auth.register.RegisterRes;
+import sh4re_v2.sh4re_v2.dto.auth.resetPassword.ResetPasswordReq;
 import sh4re_v2.sh4re_v2.service.main.AuthService;
 
 @RestController
@@ -34,13 +34,18 @@ public class AuthController {
         return authService.registerUser(registerRequest);
     }
 
+    @PostMapping("/reset-password")
+    public void resetPassword(@Valid @RequestBody ResetPasswordReq resetPasswordReq) {
+      authService.resetPassword(resetPasswordReq);
+    }
+
     @PostMapping("/refresh")
     public RefreshTokenRes refreshToken(HttpServletRequest request, HttpServletResponse response) {
         return authService.refreshToken(request, response);
     }
 
     @PostMapping("/logout")
-    public LogOutRes logout(@AuthenticationPrincipal UserDetails userDetails) {
-        return authService.logout(userDetails);
+    public void logout(@AuthenticationPrincipal UserDetails userDetails) {
+      authService.logout(userDetails);
     }
 }

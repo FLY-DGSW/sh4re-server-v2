@@ -13,16 +13,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sh4re_v2.sh4re_v2.common.UserAuthenticationHolder;
 import sh4re_v2.sh4re_v2.context.TenantContext;
 import sh4re_v2.sh4re_v2.domain.main.School;
 import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.domain.tenant.ClassPlacement;
 import sh4re_v2.sh4re_v2.dto.auth.login.LoginReq;
 import sh4re_v2.sh4re_v2.dto.auth.login.LoginRes;
-import sh4re_v2.sh4re_v2.dto.auth.logout.LogOutRes;
 import sh4re_v2.sh4re_v2.dto.auth.refreshToken.RefreshTokenRes;
 import sh4re_v2.sh4re_v2.dto.auth.register.RegisterReq;
 import sh4re_v2.sh4re_v2.dto.auth.register.RegisterRes;
+import sh4re_v2.sh4re_v2.dto.auth.resetPassword.ResetPasswordReq;
 import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.SchoolStatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.AuthException;
@@ -42,6 +43,7 @@ public class AuthService {
   private final SchoolService schoolService;
   private final RefreshTokenService refreshTokenService;
   private final ClassPlacementService classPlacementService;
+  private final UserAuthenticationHolder userAuthenticationHolder;
   @Value("${cookie.domain:localhost}")
   private String COOKIE_DOMAIN;
   @Value("${cookie.secure:false}")
@@ -145,8 +147,15 @@ public class AuthService {
     return new RefreshTokenRes(newAccessToken);
   }
 
-  public LogOutRes logout(UserDetails userDetails) {
+  public void logout(UserDetails userDetails) {
     refreshTokenService.deleteByUsername(userDetails.getUsername());
-    return new LogOutRes();
+  }
+
+  public void resetPassword(ResetPasswordReq resetPasswordReq) {
+    User user = userAuthenticationHolder.current();
+    if(passwordEncoder.matches(resetPasswordReq.password(), user.getPassword())) {
+      user.setPassword(passwordEncoder.encode(resetPasswordReq.newPassword()));
+      userService.save(user);
+    }
   }
 }
