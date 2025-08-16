@@ -21,6 +21,7 @@ import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.exception.exception.ClassPlacementException;
 import sh4re_v2.sh4re_v2.exception.exception.SubjectException;
 import sh4re_v2.sh4re_v2.repository.tenant.SubjectRepository;
+import sh4re_v2.sh4re_v2.security.Role;
 
 @Service
 @Transactional(transactionManager = "tenantTransactionManager")
@@ -36,6 +37,18 @@ public class SubjectService {
 
   public Optional<Subject> findById(Long id) {
     return subjectRepository.findById(id);
+  }
+
+  public boolean canAccessSubject(Subject subject, User user) {
+    if(user.getRole() == Role.TEACHER || user.getRole() == Role.ADMIN) return true;
+    if(subject.getUserId().equals(user.getId())) return true;
+    List<ClassPlacement> classPlacements = classPlacementService.findAllByUserId(user.getId());
+    for(ClassPlacement classPlacement : classPlacements) {
+      if(subject.getGrade().equals(classPlacement.getGrade()) && subject.getClassNumber().equals(classPlacement.getClassNumber()) && subject.getSchoolYear().equals(classPlacement.getSchoolYear())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public void deleteById(Long id) {

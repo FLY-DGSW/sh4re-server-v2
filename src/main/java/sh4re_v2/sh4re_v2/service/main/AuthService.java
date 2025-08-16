@@ -43,7 +43,7 @@ public class AuthService {
   private final SchoolService schoolService;
   private final RefreshTokenService refreshTokenService;
   private final ClassPlacementService classPlacementService;
-  private final UserAuthenticationHolder userAuthenticationHolder;
+  private final UserAuthenticationHolder holder;
   @Value("${cookie.domain:localhost}")
   private String COOKIE_DOMAIN;
   @Value("${cookie.secure:false}")
@@ -152,10 +152,12 @@ public class AuthService {
   }
 
   public void resetPassword(ResetPasswordReq resetPasswordReq) {
-    User user = userAuthenticationHolder.current();
+    User user = holder.current();
     if(passwordEncoder.matches(resetPasswordReq.password(), user.getPassword())) {
       user.setPassword(passwordEncoder.encode(resetPasswordReq.newPassword()));
       userService.save(user);
+    } else {
+      throw AuthException.of(AuthStatusCode.WRONG_CURRENT_PASSWORD);
     }
   }
 }
