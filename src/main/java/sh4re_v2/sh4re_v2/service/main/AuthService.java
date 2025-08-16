@@ -22,7 +22,7 @@ import sh4re_v2.sh4re_v2.dto.auth.login.LoginReq;
 import sh4re_v2.sh4re_v2.dto.auth.login.LoginRes;
 import sh4re_v2.sh4re_v2.dto.auth.refreshToken.RefreshTokenRes;
 import sh4re_v2.sh4re_v2.dto.auth.register.RegisterReq;
-import sh4re_v2.sh4re_v2.dto.auth.register.RegisterRes;
+import sh4re_v2.sh4re_v2.dto.auth.RegisterResponse;
 import sh4re_v2.sh4re_v2.dto.auth.resetPassword.ResetPasswordReq;
 import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.SchoolStatusCode;
@@ -94,7 +94,7 @@ public class AuthService {
     return new LoginRes(accessToken);
   }
 
-  public RegisterRes registerUser(RegisterReq registerReq) {
+  public RegisterResponse registerUser(RegisterReq registerReq) {
     // Check if username already exists
     userService.validateUsername(registerReq.username());
 
@@ -120,8 +120,8 @@ public class AuthService {
     // Save the classPlacement
     classPlacementService.save(classPlacement);
 
-    // return a response
-    return new RegisterRes(user.getId());
+    // return response
+    return new RegisterResponse(user.getId());
   }
 
   public RefreshTokenRes refreshToken(HttpServletRequest request, HttpServletResponse response){

@@ -10,12 +10,10 @@ import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.domain.tenant.ClassPlacement;
 import sh4re_v2.sh4re_v2.domain.tenant.Subject;
 import sh4re_v2.sh4re_v2.dto.subject.createSubject.CreateSubjectReq;
-import sh4re_v2.sh4re_v2.dto.subject.createSubject.CreateSubjectRes;
+import sh4re_v2.sh4re_v2.dto.subject.CreateSubjectResponse;
 import sh4re_v2.sh4re_v2.dto.subject.deleteSubject.DeleteSubjectReq;
-import sh4re_v2.sh4re_v2.dto.subject.deleteSubject.DeleteSubjectRes;
 import sh4re_v2.sh4re_v2.dto.subject.getAllSubjects.GetAllSubjectsRes;
 import sh4re_v2.sh4re_v2.dto.subject.updateSubject.UpdateSubjectReq;
-import sh4re_v2.sh4re_v2.dto.subject.updateSubject.UpdateSubjectRes;
 import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.ClassPlacementStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.SubjectStatusCode;
@@ -58,14 +56,14 @@ public class SubjectService {
     return new GetAllSubjectsRes(subjects);
   }
 
-  public CreateSubjectRes createSubject(CreateSubjectReq req) {
+  public CreateSubjectResponse createSubject(CreateSubjectReq req) {
     User user = holder.current();
     Subject newSubject = req.toEntity(user.getId());
     this.save(newSubject);
-    return new CreateSubjectRes(newSubject.getId());
+    return new CreateSubjectResponse(newSubject.getId());
   }
 
-  public UpdateSubjectRes updateSubject(UpdateSubjectReq req) {
+  public void updateSubject(UpdateSubjectReq req) {
     User user = holder.current();
     Optional<Subject> subjectOpt = this.findById(req.id());
     if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
@@ -73,16 +71,14 @@ public class SubjectService {
     if(!subject.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     Subject newSubject = req.toEntity(subject);
     this.save(newSubject);
-    return new UpdateSubjectRes(newSubject.getId());
   }
 
-  public DeleteSubjectRes deleteSubject(DeleteSubjectReq req) {
+  public void deleteSubject(DeleteSubjectReq req) {
     User user = holder.current();
     Optional<Subject> subjectOpt = this.findById(req.id());
     if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
     Subject subject = subjectOpt.get();
     if(!subject.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     this.deleteById(req.id());
-    return new DeleteSubjectRes(subject.getId());
   }
 }

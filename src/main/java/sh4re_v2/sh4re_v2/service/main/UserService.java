@@ -11,7 +11,6 @@ import sh4re_v2.sh4re_v2.domain.tenant.ClassPlacement;
 import sh4re_v2.sh4re_v2.dto.user.getMyInfo.GetMyInfoRes;
 import sh4re_v2.sh4re_v2.dto.user.getMyInfo.UserWithClassInfo;
 import sh4re_v2.sh4re_v2.dto.user.setTheme.SetThemeReq;
-import sh4re_v2.sh4re_v2.dto.user.setTheme.SetThemeRes;
 import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.repository.main.UserRepository;
@@ -50,11 +49,10 @@ public class UserService {
     return new GetMyInfoRes(userWithClassInfo);
   }
 
-  public SetThemeRes setTheme(SetThemeReq setThemeReq) {
+  public void setTheme(SetThemeReq setThemeReq) {
     User user = holder.current();
     user.setTheme(setThemeReq.getThemeEnum());
     this.save(user);
-    return new SetThemeRes();
   }
 
   public void validateUsername(String username) {
