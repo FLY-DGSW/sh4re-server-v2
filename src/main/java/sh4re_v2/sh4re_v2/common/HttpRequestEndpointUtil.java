@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.DispatcherServlet;
 import sh4re_v2.sh4re_v2.config.SecurityPathConfig;
 import sh4re_v2.sh4re_v2.config.SecurityPathConfig.EndpointConfig;
-import sh4re_v2.sh4re_v2.dto.BaseRes;
+import sh4re_v2.sh4re_v2.dto.ErrorResponse;
 import sh4re_v2.sh4re_v2.exception.status_code.CommonStatusCode;
 
 @Component
@@ -25,10 +25,10 @@ public class HttpRequestEndpointUtil {
     if(!isEndpointExist(request)){
       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
       response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-      BaseRes<?> body = new BaseRes<>(
+      ErrorResponse body = ErrorResponse.of(
           CommonStatusCode.ENDPOINT_NOT_FOUND.getCode(),
-          CommonStatusCode.ENDPOINT_NOT_FOUND.getMessage(),
-          null);
+          CommonStatusCode.ENDPOINT_NOT_FOUND.getMessage()
+      );
       objectMapper.writeValue(response.getOutputStream(), body);
       return true;
     }
