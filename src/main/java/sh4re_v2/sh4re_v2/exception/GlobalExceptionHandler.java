@@ -26,7 +26,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(statusCode.getHttpStatus())
         .body(new BaseRes<>(
-            false,
             statusCode.getCode(),
             ex.getMessage() != null ? ex.getMessage() : statusCode.getMessage(),
             null
@@ -46,7 +45,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(CommonStatusCode.INVALID_ARGUMENT.getHttpStatus())
         .body(new BaseRes<>(
-            false,
             CommonStatusCode.INVALID_ARGUMENT.getCode(),
             "요청값이 유효하지 않습니다.",
             errors
@@ -59,7 +57,6 @@ public class GlobalExceptionHandler {
       return ResponseEntity
           .status(TenantStatusCode.TENANT_NOT_FOUND.getHttpStatus())
           .body(new BaseRes<>(
-              false,
               TenantStatusCode.TENANT_NOT_FOUND.getCode(),
               TenantStatusCode.TENANT_NOT_FOUND.getMessage(),
               null
@@ -68,7 +65,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(CommonStatusCode.INTERNAL_SERVER_ERROR.getHttpStatus())
         .body(new BaseRes<>(
-            false,
             CommonStatusCode.INTERNAL_SERVER_ERROR.getCode(),
             CommonStatusCode.INTERNAL_SERVER_ERROR.getMessage(),
             null
@@ -80,7 +76,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(AuthStatusCode.INVALID_CREDENTIALS.getHttpStatus())
         .body(new BaseRes<>(
-            false,
             AuthStatusCode.INVALID_CREDENTIALS.getCode(),
             AuthStatusCode.INVALID_CREDENTIALS.getMessage(),
             null
@@ -92,7 +87,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(AuthStatusCode.ACCOUNT_LOCKED.getHttpStatus())
         .body(new BaseRes<>(
-            false,
             AuthStatusCode.ACCOUNT_LOCKED.getCode(),
             AuthStatusCode.ACCOUNT_LOCKED.getMessage(),
             null
@@ -104,7 +98,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(AuthStatusCode.ACCOUNT_DISABLED.getHttpStatus())
         .body(new BaseRes<>(
-            false,
             AuthStatusCode.ACCOUNT_DISABLED.getCode(),
             AuthStatusCode.ACCOUNT_DISABLED.getMessage(),
             null
@@ -117,7 +110,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(CommonStatusCode.INTERNAL_SERVER_ERROR.getHttpStatus())
         .body(new BaseRes<>(
-            false,
             CommonStatusCode.INTERNAL_SERVER_ERROR.getCode(),
             CommonStatusCode.INTERNAL_SERVER_ERROR.getMessage(),
             null

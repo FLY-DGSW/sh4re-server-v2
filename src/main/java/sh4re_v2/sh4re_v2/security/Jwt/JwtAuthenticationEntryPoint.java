@@ -64,7 +64,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     ApplicationException ex = new ApplicationException(statusCode, exception);
     return new BaseRes<>(
-        false,
         statusCode.getCode(),
         ex.getMessage() == null ? statusCode.getMessage() : ex.getMessage(),
         null
@@ -77,7 +76,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       BaseRes<?> body = new BaseRes<>(
-          false,
           AuthStatusCode.LOGIN_REQUIRED.getCode(),
           AuthStatusCode.LOGIN_REQUIRED.getMessage(),
           null);

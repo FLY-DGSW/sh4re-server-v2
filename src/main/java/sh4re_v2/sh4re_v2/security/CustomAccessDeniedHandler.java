@@ -34,7 +34,6 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     // body 생성
     BaseRes<?> body = new BaseRes<>(
-        false,
         AuthStatusCode.PERMISSION_DENIED.getCode(),
         AuthStatusCode.PERMISSION_DENIED.getMessage(),
         null

@@ -26,7 +26,6 @@ public class HttpRequestEndpointUtil {
       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
       response.setStatus(HttpServletResponse.SC_NOT_FOUND);
       BaseRes<?> body = new BaseRes<>(
-          false,
           CommonStatusCode.ENDPOINT_NOT_FOUND.getCode(),
           CommonStatusCode.ENDPOINT_NOT_FOUND.getMessage(),
           null);
