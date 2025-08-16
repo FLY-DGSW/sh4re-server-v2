@@ -29,7 +29,6 @@ public class Code extends Base {
   private String description;
 
   @NotBlank
-  @Lob
   private String code;
 
 
