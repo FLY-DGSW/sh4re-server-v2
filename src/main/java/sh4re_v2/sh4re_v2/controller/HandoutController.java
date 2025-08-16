@@ -1,8 +1,10 @@
 package sh4re_v2.sh4re_v2.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,11 +26,12 @@ import java.net.URI;
 @RestController
 @RequestMapping("/api/v1/handouts")
 @RequiredArgsConstructor
+@Validated
 public class HandoutController {
   private final HandoutService handoutService;
 
   @GetMapping
-  public ResponseEntity<GetAllHandoutsRes> getAllHandouts(@RequestParam(required = false) Long subjectId) {
+  public ResponseEntity<GetAllHandoutsRes> getAllHandouts(@NotNull(message = "과목 ID는 필수 입력 값입니다.") @RequestParam Long subjectId) {
     GetAllHandoutsRes response = handoutService.getAllHandouts(subjectId);
     return ResponseEntity.ok(response);
   }

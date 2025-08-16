@@ -1,9 +1,8 @@
 package sh4re_v2.sh4re_v2.exception;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -13,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import sh4re_v2.sh4re_v2.dto.ErrorResponse;
 import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.CommonStatusCode;
@@ -42,6 +42,26 @@ public class GlobalExceptionHandler {
       String field = ((FieldError) error).getField();
       String message = error.getDefaultMessage() != null ? error.getDefaultMessage() : "잘못된 입력값 입니다.";
       details.put(field, message);
+    });
+
+    ErrorResponse error = ErrorResponse.of(
+        CommonStatusCode.INVALID_ARGUMENT.getCode(),
+        "요청값이 유효하지 않습니다.",
+        details
+    );
+
+    return ResponseEntity
+        .status(CommonStatusCode.INVALID_ARGUMENT.getHttpStatus())
+        .body(error);
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+    Map<String, String> details = new HashMap<>();
+    ex.getConstraintViolations().forEach(violation -> {
+      String fieldName = violation.getPropertyPath().toString();
+      String message = violation.getMessage();
+      details.put(fieldName, message);
     });
 
     ErrorResponse error = ErrorResponse.of(
@@ -105,6 +125,17 @@ public class GlobalExceptionHandler {
     );
     return ResponseEntity
         .status(AuthStatusCode.ACCOUNT_DISABLED.getHttpStatus())
+        .body(error);
+  }
+
+  @ExceptionHandler(NoResourceFoundException.class)
+  public ResponseEntity<ErrorResponse> handleNoResourceFoundException(NoResourceFoundException ex) {
+    ErrorResponse error = ErrorResponse.of(
+        CommonStatusCode.ENDPOINT_NOT_FOUND.getCode(),
+        CommonStatusCode.ENDPOINT_NOT_FOUND.getMessage()
+    );
+    return ResponseEntity
+        .status(CommonStatusCode.ENDPOINT_NOT_FOUND.getHttpStatus())
         .body(error);
   }
 
