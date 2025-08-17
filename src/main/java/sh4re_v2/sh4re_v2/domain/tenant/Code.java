@@ -1,7 +1,7 @@
 package sh4re_v2.sh4re_v2.domain.tenant;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Lob;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -26,15 +26,17 @@ public class Code extends Base {
   @NotBlank
   private String language;
 
+  @Column(columnDefinition = "TEXT")
   private String description;
 
   @NotBlank
+  @Column(columnDefinition = "TEXT")
   private String code;
-
 
   @NotBlank
   private String className;
 
+  @Column(columnDefinition = "TEXT")
   private String assignment;
 
   @NotNull
