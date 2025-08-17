@@ -11,9 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import sh4re_v2.sh4re_v2.dto.openai.Message;
+import sh4re_v2.sh4re_v2.dto.openai.OpenAIRequest;
+import sh4re_v2.sh4re_v2.dto.openai.OpenAIResponse;
 
 @Slf4j
 @Service
@@ -39,36 +40,41 @@ public class OpenAIService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(apiKey);
             
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", model);
-            requestBody.put("messages", List.of(
-                Map.of("role", "user", "content", prompt)
-            ));
-            requestBody.put("max_tokens", 300);
-            requestBody.put("temperature", 0.7);
+            // 타입 안전한 요청 객체 생성
+            Message userMessage = new Message();
+            userMessage.setRole("user");
+            userMessage.setContent(prompt);
             
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+            OpenAIRequest requestBody = OpenAIRequest.builder()
+                .model(model)
+                .messages(List.of(userMessage))
+                .maxTokens(300)
+                .temperature(0.7)
+                .build();
             
-            ResponseEntity<Map> response = restTemplate.exchange(
-                "https://api.openai.com/v1/chat/completions",
+            HttpEntity<OpenAIRequest> entity = new HttpEntity<>(requestBody, headers);
+            
+            ResponseEntity<OpenAIResponse> response = restTemplate.exchange(
+                apiUrl,
                 HttpMethod.POST,
                 entity,
-                Map.class
+                OpenAIResponse.class
             );
             
-            if (response.getBody() != null && response.getBody().containsKey("choices")) {
-                List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
-                if (!choices.isEmpty()) {
-                    Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-                    return (String) message.get("content");
+            // 타입 안전한 응답 처리
+            OpenAIResponse responseBody = response.getBody();
+            if (responseBody != null && responseBody.getChoices() != null && !responseBody.getChoices().isEmpty()) {
+                String content = responseBody.getChoices().get(0).getMessage().getContent();
+                if (content != null && !content.trim().isEmpty()) {
+                    return content.trim();
                 }
             }
             
-            log.warn("OpenAI API response format unexpected");
+            log.warn("OpenAI API response format unexpected or empty content");
             return generateFallbackDescription(code, language, assignment);
             
         } catch (Exception e) {
-            log.error("Failed to generate description using OpenAI: {}", e.getMessage());
+            log.error("Failed to generate description using OpenAI", e);
             return generateFallbackDescription(code, language, assignment);
         }
     }
