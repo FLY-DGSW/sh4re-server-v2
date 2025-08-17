@@ -11,12 +11,10 @@ import sh4re_v2.sh4re_v2.domain.tenant.Code;
 import sh4re_v2.sh4re_v2.domain.tenant.CodeLike;
 import sh4re_v2.sh4re_v2.domain.tenant.ClassPlacement;
 import sh4re_v2.sh4re_v2.dto.code.createCode.CreateCodeReq;
-import sh4re_v2.sh4re_v2.dto.code.createCode.CreateCodeRes;
-import sh4re_v2.sh4re_v2.dto.code.deleteCode.DeleteCodeRes;
+import sh4re_v2.sh4re_v2.dto.code.CreateCodeResponse;
 import sh4re_v2.sh4re_v2.dto.code.getAllCodes.GetAllCodesRes;
 import sh4re_v2.sh4re_v2.dto.code.getCode.GetCodeRes;
 import sh4re_v2.sh4re_v2.dto.code.updateCode.UpdateCodeReq;
-import sh4re_v2.sh4re_v2.dto.code.updateCode.UpdateCodeRes;
 import sh4re_v2.sh4re_v2.dto.code.toggleLike.ToggleLikeRes;
 import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.ClassPlacementStatusCode;
@@ -26,6 +24,7 @@ import sh4re_v2.sh4re_v2.exception.exception.ClassPlacementException;
 import sh4re_v2.sh4re_v2.exception.exception.CodeException;
 import sh4re_v2.sh4re_v2.repository.tenant.CodeRepository;
 import sh4re_v2.sh4re_v2.repository.tenant.CodeLikeRepository;
+import sh4re_v2.sh4re_v2.service.main.OpenAIService;
 
 @Service
 @Transactional(transactionManager = "tenantTransactionManager")
@@ -35,6 +34,7 @@ public class CodeService {
   private final CodeLikeRepository codeLikeRepository;
   private final UserAuthenticationHolder holder;
   private final ClassPlacementService classPlacementService;
+  private final OpenAIService openAIService;
 
   public Code save(Code code) {
     return codeRepository.save(code);
@@ -57,11 +57,30 @@ public class CodeService {
     return GetAllCodesRes.from(codes, this::getLikeCount);
   }
 
-  public CreateCodeRes createCode(CreateCodeReq req) {
+  public CreateCodeResponse createCode(CreateCodeReq req) {
     User user = holder.current();
-    Code newCode = req.toEntity(user.getId(), user.getName());
+    
+    String finalDescription = req.description();
+    
+    // AI 자동 생성 옵션이 true인 경우 OpenAI로 설명 생성
+    if (Boolean.TRUE.equals(req.useAiDescription())) {
+      try {
+        String aiDescription = openAIService.generateCodeDescription(
+            req.code(), 
+            req.language(), 
+            req.assignment()
+        );
+        finalDescription = aiDescription;
+      } catch (Exception e) {
+        // AI 생성 실패시 기존 description 사용 (fallback은 OpenAIService에서 처리)
+        finalDescription = req.description();
+      }
+    }
+    
+    // 수정된 toEntity 메서드 호출
+    Code newCode = req.toEntityWithDescription(user.getId(), user.getName(), finalDescription);
     this.save(newCode);
-    return new CreateCodeRes(newCode.getId());
+    return new CreateCodeResponse(newCode.getId());
   }
 
   public GetCodeRes getCode(Long id) {
@@ -74,7 +93,7 @@ public class CodeService {
     return GetCodeRes.from(code, likeCount, isLikedByUser);
   }
 
-  public UpdateCodeRes updateCode(Long id, UpdateCodeReq req) {
+  public void updateCode(Long id, UpdateCodeReq req) {
     User user = holder.current();
     Optional<Code> codeOpt = this.findById(id);
     if(codeOpt.isEmpty()) throw CodeException.of(CodeStatusCode.CODE_NOT_FOUND);
@@ -82,17 +101,15 @@ public class CodeService {
     if(!code.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     Code newCode = req.toEntity(code);
     this.save(newCode);
-    return new UpdateCodeRes(newCode.getId());
   }
 
-  public DeleteCodeRes deleteCode(Long id) {
+  public void deleteCode(Long id) {
     User user = holder.current();
     Optional<Code> codeOpt = this.findById(id);
     if(codeOpt.isEmpty()) throw CodeException.of(CodeStatusCode.CODE_NOT_FOUND);
     Code code = codeOpt.get();
     if(!code.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     this.deleteById(id);
-    return new DeleteCodeRes(code.getId());
   }
 
   public ToggleLikeRes toggleLike(Long codeId) {

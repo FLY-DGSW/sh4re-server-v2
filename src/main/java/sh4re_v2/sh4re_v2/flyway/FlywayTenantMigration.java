@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 import sh4re_v2.sh4re_v2.tenant.TenantUtil;
 import sh4re_v2.sh4re_v2.tenant.TenantConnectionInfo;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class FlywayTenantMigration implements ApplicationRunner {
@@ -30,7 +32,7 @@ public class FlywayTenantMigration implements ApplicationRunner {
           .load();
 
       if(hasPendingMigrations(flyway)){
-        System.out.println("Migrating tenant: " + tenant.getTenantId());
+        log.info("Migrating tenant: {}", tenant.getTenantId());
         flyway.migrate();
       }
     }

@@ -10,13 +10,10 @@ import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.domain.tenant.Announcement;
 import sh4re_v2.sh4re_v2.domain.tenant.ClassPlacement;
 import sh4re_v2.sh4re_v2.dto.announcement.createAnnouncement.CreateAnnouncementReq;
-import sh4re_v2.sh4re_v2.dto.announcement.createAnnouncement.CreateAnnouncementRes;
-import sh4re_v2.sh4re_v2.dto.announcement.deleteAnnouncement.DeleteAnnouncementReq;
-import sh4re_v2.sh4re_v2.dto.announcement.deleteAnnouncement.DeleteAnnouncementRes;
+import sh4re_v2.sh4re_v2.dto.announcement.CreateAnnouncementResponse;
 import sh4re_v2.sh4re_v2.dto.announcement.getAllAnnouncements.GetAllAnnouncementsRes;
 import sh4re_v2.sh4re_v2.dto.announcement.getAnnouncement.GetAnnouncementRes;
 import sh4re_v2.sh4re_v2.dto.announcement.updateAnnouncement.UpdateAnnouncementReq;
-import sh4re_v2.sh4re_v2.dto.announcement.updateAnnouncement.UpdateAnnouncementRes;
 import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.ClassPlacementStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.AnnouncementStatusCode;
@@ -59,11 +56,11 @@ public class AnnouncementService {
     return GetAllAnnouncementsRes.from(announcements);
   }
 
-  public CreateAnnouncementRes createAnnouncement(CreateAnnouncementReq req) {
+  public CreateAnnouncementResponse createAnnouncement(CreateAnnouncementReq req) {
     User user = holder.current();
     Announcement newAnnouncement = req.toEntity(user.getId());
     this.save(newAnnouncement);
-    return new CreateAnnouncementRes(newAnnouncement.getId());
+    return new CreateAnnouncementResponse(newAnnouncement.getId());
   }
 
   public GetAnnouncementRes getAnnouncement(Long id) {
@@ -73,7 +70,7 @@ public class AnnouncementService {
     return GetAnnouncementRes.from(announcement);
   }
 
-  public UpdateAnnouncementRes updateAnnouncement(Long id, UpdateAnnouncementReq req) {
+  public void updateAnnouncement(Long id, UpdateAnnouncementReq req) {
     User user = holder.current();
     Optional<Announcement> announcementOpt = this.findById(id);
     if(announcementOpt.isEmpty()) throw AnnouncementException.of(AnnouncementStatusCode.ANNOUNCEMENT_NOT_FOUND);
@@ -81,16 +78,14 @@ public class AnnouncementService {
     if(!announcement.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     Announcement newAnnouncement = req.toEntity(announcement);
     this.save(newAnnouncement);
-    return new UpdateAnnouncementRes(newAnnouncement.getId());
   }
 
-  public DeleteAnnouncementRes deleteAnnouncement(Long id) {
+  public void deleteAnnouncement(Long id) {
     User user = holder.current();
     Optional<Announcement> announcementOpt = this.findById(id);
     if(announcementOpt.isEmpty()) throw AnnouncementException.of(AnnouncementStatusCode.ANNOUNCEMENT_NOT_FOUND);
     Announcement announcement = announcementOpt.get();
     if(!announcement.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     this.deleteById(id);
-    return new DeleteAnnouncementRes(announcement.getId());
   }
 }

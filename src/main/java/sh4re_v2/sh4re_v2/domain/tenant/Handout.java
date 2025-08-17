@@ -1,6 +1,5 @@
 package sh4re_v2.sh4re_v2.domain.tenant;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,31 +15,21 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Code extends Base {
+public class Handout extends Base {
   @NotBlank
   private String title;
 
   @NotBlank
-  private String student;
-
-  @NotBlank
-  private String language;
-
-  @Column(columnDefinition = "TEXT")
   private String description;
 
   @NotBlank
-  @Column(columnDefinition = "TEXT")
-  private String code;
+  private String author;
 
   @NotBlank
-  private String className;
-
-  @Column(columnDefinition = "TEXT")
-  private String assignment;
+  private String fileUrl;
 
   @NotNull
-  private Integer schoolYear;
+  private Long subjectId;
 
   @NotNull
   private Long userId;

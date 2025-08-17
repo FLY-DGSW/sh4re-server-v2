@@ -13,8 +13,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import sh4re_v2.sh4re_v2.common.HttpRequestEndpointUtil;
-import sh4re_v2.sh4re_v2.dto.BaseRes;
+import sh4re_v2.sh4re_v2.dto.ErrorResponse;
 import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.StatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.ApplicationException;
@@ -25,7 +24,6 @@ import sh4re_v2.sh4re_v2.exception.exception.ApplicationException;
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
   private final ObjectMapper objectMapper;
-  private final HttpRequestEndpointUtil httpRequestEndpointUtil;
   private final JwtTokenProvider jwtTokenProvider;
 
   @Override
@@ -33,8 +31,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
       AuthenticationException authException) throws IOException {
     // 만약 토큰이 없어서 에러가 발생했다면 응답을 설정하고 return
     if(isEmptyJwtThenSetResponse(request, response)) return;
-    // 만약 엔드포인트가 없어서 에러가 발생했다면 응답을 설정하고 return
-    if(httpRequestEndpointUtil.isInvalidEndpointThenSetResponse(request, response)) return;
 
     // 반환 타입 설정
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -42,13 +38,13 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     // body 생성
     Throwable exception = authException.getCause() != null ? authException.getCause() : authException;
-    BaseRes<?> body = getBody(exception);
+    ErrorResponse body = getBody(exception);
 
     // response에 생성한 body를 직렬화하여 저장한다.
     objectMapper.writeValue(response.getOutputStream(), body);
   }
 
-  private static BaseRes<?> getBody(Throwable exception) {
+  private static ErrorResponse getBody(Throwable exception) {
     StatusCode statusCode;
     if (exception instanceof ApplicationException) {
       statusCode = ((ApplicationException) exception).getStatusCode();
@@ -63,10 +59,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     }
 
     ApplicationException ex = new ApplicationException(statusCode, exception);
-    return new BaseRes<>(
+    return ErrorResponse.of(
         statusCode.getCode(),
-        ex.getMessage() == null ? statusCode.getMessage() : ex.getMessage(),
-        null
+        ex.getMessage() == null ? statusCode.getMessage() : ex.getMessage()
     );
   }
 
@@ -75,10 +70,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     if (!StringUtils.hasText(token)) {
       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      BaseRes<?> body = new BaseRes<>(
+      ErrorResponse body = ErrorResponse.of(
           AuthStatusCode.LOGIN_REQUIRED.getCode(),
-          AuthStatusCode.LOGIN_REQUIRED.getMessage(),
-          null);
+          AuthStatusCode.LOGIN_REQUIRED.getMessage());
       objectMapper.writeValue(response.getOutputStream(), body);
       return true;
     }
