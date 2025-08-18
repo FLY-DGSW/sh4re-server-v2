@@ -25,6 +25,9 @@ import sh4re_v2.sh4re_v2.exception.exception.CodeException;
 import sh4re_v2.sh4re_v2.repository.tenant.CodeRepository;
 import sh4re_v2.sh4re_v2.repository.tenant.CodeLikeRepository;
 import sh4re_v2.sh4re_v2.service.main.OpenAIService;
+import sh4re_v2.sh4re_v2.domain.tenant.Assignment;
+import sh4re_v2.sh4re_v2.service.tenant.AssignmentService;
+import sh4re_v2.sh4re_v2.service.main.UserService;
 
 @Service
 @Transactional(transactionManager = "tenantTransactionManager")
@@ -35,6 +38,8 @@ public class CodeService {
   private final UserAuthenticationHolder holder;
   private final ClassPlacementService classPlacementService;
   private final OpenAIService openAIService;
+  private final AssignmentService assignmentService;
+  private final UserService userService;
 
   public Code save(Code code) {
     return codeRepository.save(code);
@@ -54,21 +59,36 @@ public class CodeService {
     if(classPlacementOpt.isEmpty()) throw ClassPlacementException.of(ClassPlacementStatusCode.CLASS_PLACEMENT_NOT_FOUND);
     ClassPlacement classPlacement = classPlacementOpt.get();
     List<Code> codes = codeRepository.findAllBySchoolYear(classPlacement.getSchoolYear());
-    return GetAllCodesRes.from(codes, this::getLikeCount);
+    return GetAllCodesRes.from(codes, this::getLikeCount, userService);
   }
 
   public CreateCodeResponse createCode(CreateCodeReq req) {
     User user = holder.current();
+    
+    // ClassPlacement 조회
+    Optional<ClassPlacement> classPlacementOpt = classPlacementService.findById(req.classPlacementId());
+    if(classPlacementOpt.isEmpty()) throw ClassPlacementException.of(ClassPlacementStatusCode.CLASS_PLACEMENT_NOT_FOUND);
+    ClassPlacement classPlacement = classPlacementOpt.get();
+    
+    // Assignment 조회 (optional)
+    Assignment assignment = null;
+    if(req.assignmentId() != null) {
+      Optional<Assignment> assignmentOpt = assignmentService.findById(req.assignmentId());
+      if(assignmentOpt.isPresent()) {
+        assignment = assignmentOpt.get();
+      }
+    }
     
     String finalDescription = req.description();
     
     // AI 자동 생성 옵션이 true인 경우 OpenAI로 설명 생성
     if (Boolean.TRUE.equals(req.useAiDescription())) {
       try {
+        String assignmentTitle = assignment != null ? assignment.getTitle() : "";
         String aiDescription = openAIService.generateCodeDescription(
             req.code(), 
             req.language(), 
-            req.assignment()
+            assignmentTitle
         );
         finalDescription = aiDescription;
       } catch (Exception e) {
@@ -78,7 +98,7 @@ public class CodeService {
     }
     
     // 수정된 toEntity 메서드 호출
-    Code newCode = req.toEntityWithDescription(user.getId(), user.getName(), finalDescription);
+    Code newCode = req.toEntityWithDescription(user.getId(), classPlacement, assignment, finalDescription);
     this.save(newCode);
     return new CreateCodeResponse(newCode.getId());
   }
@@ -90,7 +110,7 @@ public class CodeService {
     Code code = codeOpt.get();
     Long likeCount = getLikeCount(id);
     boolean isLikedByUser = isLikedByUser(id, user.getId());
-    return GetCodeRes.from(code, likeCount, isLikedByUser);
+    return GetCodeRes.from(code, likeCount, isLikedByUser, userService);
   }
 
   public void updateCode(Long id, UpdateCodeReq req) {
@@ -98,8 +118,25 @@ public class CodeService {
     Optional<Code> codeOpt = this.findById(id);
     if(codeOpt.isEmpty()) throw CodeException.of(CodeStatusCode.CODE_NOT_FOUND);
     Code code = codeOpt.get();
-    if(!code.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    if(!code.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    
+    // ClassPlacement 조회
+    Optional<ClassPlacement> classPlacementOpt = classPlacementService.findById(req.classPlacementId());
+    if(classPlacementOpt.isEmpty()) throw ClassPlacementException.of(ClassPlacementStatusCode.CLASS_PLACEMENT_NOT_FOUND);
+    ClassPlacement classPlacement = classPlacementOpt.get();
+    
+    // Assignment 조회 (optional)
+    Assignment assignment = null;
+    if(req.assignmentId() != null) {
+      Optional<Assignment> assignmentOpt = assignmentService.findById(req.assignmentId());
+      if(assignmentOpt.isPresent()) {
+        assignment = assignmentOpt.get();
+      }
+    }
+    
     Code newCode = req.toEntity(code);
+    newCode.setClassPlacement(classPlacement);
+    newCode.setAssignment(assignment);
     this.save(newCode);
   }
 
@@ -108,7 +145,7 @@ public class CodeService {
     Optional<Code> codeOpt = this.findById(id);
     if(codeOpt.isEmpty()) throw CodeException.of(CodeStatusCode.CODE_NOT_FOUND);
     Code code = codeOpt.get();
-    if(!code.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    if(!code.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     this.deleteById(id);
   }
 

@@ -27,4 +27,8 @@ public class ClassPlacementService {
   public List<ClassPlacement> findAllByUserId(Long userId) {
     return classPlacementRepository.findAllByUserId(userId);
   }
+
+  public Optional<ClassPlacement> findById(Long id) {
+    return classPlacementRepository.findById(id);
+  }
 }

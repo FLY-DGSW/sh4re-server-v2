@@ -7,6 +7,5 @@ import sh4re_v2.sh4re_v2.domain.tenant.Code;
 
 @Repository
 public interface CodeRepository extends JpaRepository<Code, Long> {
-  List<Code> findAllByClassNameAndSchoolYear(String className, Integer schoolYear);
   List<Code> findAllBySchoolYear(Integer schoolYear);
 }
