@@ -2,6 +2,9 @@ package sh4re_v2.sh4re_v2.domain.tenant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -21,9 +24,6 @@ public class Code extends Base {
   private String title;
 
   @NotBlank
-  private String student;
-
-  @NotBlank
   private String language;
 
   @Column(columnDefinition = "TEXT")
@@ -33,15 +33,18 @@ public class Code extends Base {
   @Column(columnDefinition = "TEXT")
   private String code;
 
-  @NotBlank
-  private String className;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "class_placement_id")
+  @NotNull
+  private ClassPlacement classPlacement;
 
-  @Column(columnDefinition = "TEXT")
-  private String assignment;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "assignment_id")
+  private Assignment assignment;
 
   @NotNull
   private Integer schoolYear;
 
   @NotNull
-  private Long userId;
+  private Long authorId;
 }
