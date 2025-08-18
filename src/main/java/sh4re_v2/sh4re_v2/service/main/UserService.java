@@ -9,7 +9,6 @@ import sh4re_v2.sh4re_v2.context.TenantContext;
 import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.domain.tenant.ClassPlacement;
 import sh4re_v2.sh4re_v2.dto.user.getMyInfo.GetMyInfoRes;
-import sh4re_v2.sh4re_v2.dto.user.getMyInfo.UserWithClassInfo;
 import sh4re_v2.sh4re_v2.dto.user.setTheme.SetThemeReq;
 import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.AuthException;
@@ -44,9 +43,7 @@ public class UserService {
     
     Optional<ClassPlacement> classPlacement = classPlacementService.findLatestClassPlacementByUserId(user.getId());
     
-    UserWithClassInfo userWithClassInfo = UserWithClassInfo.from(user, classPlacement.orElse(null));
-    
-    return new GetMyInfoRes(userWithClassInfo);
+    return GetMyInfoRes.from(user, classPlacement.orElse(null));
   }
 
   public void setTheme(SetThemeReq setThemeReq) {
