@@ -20,17 +20,14 @@ public record UpdateHandoutReq(
     String fileUrl,
 
     @NotNull(message = "과목 ID는 필수 입력값 입니다.")
-    Long subjectId
+    Long subjectId,
+
+    Long unitId
 ) {
   public Handout toEntity(Handout existingHandout) {
-    return Handout
-        .builder()
-        .title(this.title)
-        .description(this.description)
-        .author(existingHandout.getAuthor())
-        .fileUrl(this.fileUrl)
-        .subjectId(this.subjectId)
-        .userId(existingHandout.getUserId())
-        .build();
+    existingHandout.setTitle(this.title);
+    existingHandout.setDescription(this.description);
+    existingHandout.setFileUrl(this.fileUrl);
+    return existingHandout;
   }
 }

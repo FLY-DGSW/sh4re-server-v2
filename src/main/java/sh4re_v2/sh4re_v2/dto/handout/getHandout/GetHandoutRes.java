@@ -1,28 +1,30 @@
 package sh4re_v2.sh4re_v2.dto.handout.getHandout;
 
 import java.time.LocalDateTime;
+import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.domain.tenant.Handout;
+import sh4re_v2.sh4re_v2.domain.tenant.Subject;
 
 public record GetHandoutRes(
     Long id,
     String title,
     String description,
-    String author,
+    User author,
     String fileUrl,
-    Long subjectId,
-    Long userId,
+    Subject subject,
+    Long authorId,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
-  public static GetHandoutRes from(Handout handout) {
+  public static GetHandoutRes from(Handout handout, User author) {
     return new GetHandoutRes(
         handout.getId(),
         handout.getTitle(),
         handout.getDescription(),
-        handout.getAuthor(),
+        author,
         handout.getFileUrl(),
-        handout.getSubjectId(),
-        handout.getUserId(),
+        handout.getSubject(),
+        handout.getAuthorId(),
         handout.getCreatedAt(),
         handout.getUpdatedAt()
     );

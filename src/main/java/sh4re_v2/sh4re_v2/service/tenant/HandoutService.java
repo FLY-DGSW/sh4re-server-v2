@@ -22,6 +22,11 @@ import sh4re_v2.sh4re_v2.exception.exception.HandoutException;
 import sh4re_v2.sh4re_v2.exception.status_code.SubjectStatusCode;
 import sh4re_v2.sh4re_v2.security.Role;
 import sh4re_v2.sh4re_v2.repository.tenant.HandoutRepository;
+import sh4re_v2.sh4re_v2.domain.tenant.Unit;
+import sh4re_v2.sh4re_v2.service.tenant.UnitService;
+import sh4re_v2.sh4re_v2.exception.status_code.UnitStatusCode;
+import sh4re_v2.sh4re_v2.exception.exception.UnitException;
+import sh4re_v2.sh4re_v2.service.main.UserService;
 
 @Service
 @Transactional(transactionManager = "tenantTransactionManager")
@@ -30,6 +35,8 @@ public class HandoutService {
   private final HandoutRepository handoutRepository;
   private final UserAuthenticationHolder holder;
   private final SubjectService subjectService;
+  private final UnitService unitService;
+  private final UserService userService;
 
   public Handout save(Handout handout) {
     return handoutRepository.save(handout);
@@ -43,20 +50,42 @@ public class HandoutService {
     handoutRepository.deleteById(id);
   }
 
+  public List<Handout> findAllByUnitId(Long unitId) {
+    return handoutRepository.findAllByUnitIdOrderByCreatedAtDesc(unitId);
+  }
+
   public GetAllHandoutsRes getAllHandouts(Long subjectId) {
     User user = holder.current();
     Optional<Subject> subjectOpt = subjectService.findById(subjectId);
     if (subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
     Subject subject = subjectOpt.get();
     if(!subjectService.canAccessSubject(subject, user)) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    List<Handout> handouts = handoutRepository.findAllBySubjectId(subjectId);
+    List<Handout> handouts = handoutRepository.findAllBySubject(subject);
     return GetAllHandoutsRes.from(handouts);
   }
 
   public CreateHandoutResponse createHandout(CreateHandoutReq req) {
     User user = holder.current();
     
-    Handout newHandout = req.toEntity(user.getId());
+    // Subject 조회
+    Optional<Subject> subjectOpt = subjectService.findById(req.subjectId());
+    if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
+    Subject subject = subjectOpt.get();
+    
+    if(!subjectService.canAccessSubject(subject, user)) {
+      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    }
+    
+    // Unit 조회 (optional)
+    Unit unit = null;
+    if(req.unitId() != null) {
+      Optional<Unit> unitOpt = unitService.findById(req.unitId());
+      if(unitOpt.isPresent()) {
+        unit = unitOpt.get();
+      }
+    }
+    
+    Handout newHandout = req.toEntity(user.getId(), subject, unit);
     this.save(newHandout);
     return new CreateHandoutResponse(newHandout.getId());
   }
@@ -68,31 +97,78 @@ public class HandoutService {
       throw HandoutException.of(HandoutStatusCode.HANDOUT_NOT_FOUND);
     }
     Handout handout = handoutOpt.get();
-    Optional<Subject> subjectOpt = subjectService.findById(handout.getSubjectId());
-    if (subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
-    Subject subject = subjectOpt.get();
-    if(!subjectService.canAccessSubject(subject, user)) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    return GetHandoutRes.from(handout);
+    
+    if(!subjectService.canAccessSubject(handout.getSubject(), user)) {
+      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    }
+    
+    // 작성자 정보 조회
+    Optional<User> authorOpt = userService.findById(handout.getAuthorId());
+    User author = authorOpt.orElse(null);
+    
+    return GetHandoutRes.from(handout, author);
   }
 
   public void updateHandout(Long id, UpdateHandoutReq req) {
+    User user = holder.current();
     Optional<Handout> handoutOpt = this.findById(id);
     if (handoutOpt.isEmpty()) {
       throw HandoutException.of(HandoutStatusCode.HANDOUT_NOT_FOUND);
     }
     Handout handout = handoutOpt.get();
     
-    Handout newHandout = req.toEntity(handout);
-    this.save(newHandout);
+    // 권한 검증
+    if(!handout.getAuthorId().equals(user.getId())) {
+      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    }
+    
+    // Subject 조회
+    Optional<Subject> subjectOpt = subjectService.findById(req.subjectId());
+    if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
+    Subject subject = subjectOpt.get();
+    
+    // Unit 조회 (optional)
+    Unit unit = null;
+    if(req.unitId() != null) {
+      Optional<Unit> unitOpt = unitService.findById(req.unitId());
+      if(unitOpt.isPresent()) {
+        unit = unitOpt.get();
+      }
+    }
+    
+    Handout updatedHandout = req.toEntity(handout);
+    updatedHandout.setSubject(subject);
+    updatedHandout.setUnit(unit);
+    this.save(updatedHandout);
   }
 
   public void deleteHandout(Long id) {
+    User user = holder.current();
     Optional<Handout> handoutOpt = this.findById(id);
     if (handoutOpt.isEmpty()) {
       throw HandoutException.of(HandoutStatusCode.HANDOUT_NOT_FOUND);
     }
     Handout handout = handoutOpt.get();
     
+    // 권한 검증
+    if(!handout.getAuthorId().equals(user.getId())) {
+      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    }
+    
     this.deleteById(id);
+  }
+
+  public GetAllHandoutsRes getAllHandoutsByUnitId(Long unitId) {
+    User user = holder.current();
+    Optional<Unit> unitOpt = unitService.findById(unitId);
+    if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
+    Unit unit = unitOpt.get();
+    
+    if(!unitService.canAccessUnit(unit, user)) {
+      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    }
+    
+    List<Handout> handouts = this.findAllByUnitId(unitId);
+    return GetAllHandoutsRes.from(handouts);
   }
 }

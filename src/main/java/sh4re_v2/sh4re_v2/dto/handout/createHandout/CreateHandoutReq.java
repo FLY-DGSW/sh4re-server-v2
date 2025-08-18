@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 import sh4re_v2.sh4re_v2.domain.tenant.Handout;
+import sh4re_v2.sh4re_v2.domain.tenant.Subject;
+import sh4re_v2.sh4re_v2.domain.tenant.Unit;
 
 public record CreateHandoutReq(
     @NotBlank(message = "제목은 필수 입력값 입니다.")
@@ -13,24 +15,23 @@ public record CreateHandoutReq(
     @NotBlank(message = "설명은 필수 입력값 입니다.")
     String description,
 
-    @NotBlank(message = "작성자는 필수 입력값 입니다.")
-    String author,
-
     @NotBlank(message = "파일 URL은 필수 입력값 입니다.")
     String fileUrl,
 
     @NotNull(message = "과목 ID는 필수 입력값 입니다.")
-    Long subjectId
+    Long subjectId,
+
+    Long unitId
 ) {
-  public Handout toEntity(Long userId) {
+  public Handout toEntity(Long authorId, Subject subject, Unit unit) {
     return Handout
         .builder()
         .title(this.title)
         .description(this.description)
-        .author(this.author)
         .fileUrl(this.fileUrl)
-        .subjectId(this.subjectId)
-        .userId(userId)
+        .subject(subject)
+        .unit(unit)
+        .authorId(authorId)
         .build();
   }
 }
