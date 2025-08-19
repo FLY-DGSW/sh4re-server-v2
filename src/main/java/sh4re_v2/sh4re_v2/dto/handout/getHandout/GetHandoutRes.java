@@ -12,7 +12,6 @@ public record GetHandoutRes(
     User author,
     String fileUrl,
     Subject subject,
-    Long authorId,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -24,7 +23,6 @@ public record GetHandoutRes(
         author,
         handout.getFileUrl(),
         handout.getSubject(),
-        handout.getAuthorId(),
         handout.getCreatedAt(),
         handout.getUpdatedAt()
     );
