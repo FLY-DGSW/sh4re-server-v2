@@ -6,6 +6,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import sh4re_v2.sh4re_v2.common.ApiResponse;
 import sh4re_v2.sh4re_v2.security.UserPrincipal;
 
 import java.util.HashMap;
@@ -16,25 +17,25 @@ import java.util.Map;
 public class TestController {
 
     @GetMapping("/public")
-    public ResponseEntity<?> publicEndpoint() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> publicEndpoint() {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Public endpoint - accessible to everyone");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/student")
-    public ResponseEntity<?> studentEndpoint(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> studentEndpoint(@AuthenticationPrincipal UserPrincipal userPrincipal) {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "User endpoint - accessible to authenticated users");
         response.put("user", userPrincipal.getUsername());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/teacher")
-    public ResponseEntity<?> teacherEndpoint(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> teacherEndpoint(@AuthenticationPrincipal UserPrincipal userPrincipal) {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Teacher endpoint - accessible to teachers only");
         response.put("user", userPrincipal.getUsername());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

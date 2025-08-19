@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import sh4re_v2.sh4re_v2.common.ApiResponse;
 import sh4re_v2.sh4re_v2.dto.subject.CreateSubjectResponse;
 import sh4re_v2.sh4re_v2.dto.subject.createSubject.CreateSubjectReq;
 import sh4re_v2.sh4re_v2.dto.subject.deleteSubject.DeleteSubjectReq;
@@ -26,27 +27,27 @@ public class SubjectController {
   private final SubjectService subjectService;
 
   @GetMapping
-  public ResponseEntity<GetAllSubjectsRes> getAllSubjects() {
+  public ResponseEntity<ApiResponse<GetAllSubjectsRes>> getAllSubjects() {
     GetAllSubjectsRes response = subjectService.getAllSubjects();
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   @PostMapping
-  public ResponseEntity<CreateSubjectResponse> createSubject(@Valid @RequestBody CreateSubjectReq req) {
+  public ResponseEntity<ApiResponse<CreateSubjectResponse>> createSubject(@Valid @RequestBody CreateSubjectReq req) {
     CreateSubjectResponse response = subjectService.createSubject(req);
     return ResponseEntity.created(URI.create("/api/v1/subjects/" + response.id()))
-        .body(response);
+        .body(ApiResponse.success(response));
   }
 
   @PatchMapping
-  public ResponseEntity<Void> updateSubject(@Valid @RequestBody UpdateSubjectReq req) {
+  public ResponseEntity<ApiResponse<Void>> updateSubject(@Valid @RequestBody UpdateSubjectReq req) {
     subjectService.updateSubject(req);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.success(null));
   }
 
   @DeleteMapping
-  public ResponseEntity<Void> deleteSubject(@Valid @RequestBody DeleteSubjectReq req) {
+  public ResponseEntity<ApiResponse<Void>> deleteSubject(@Valid @RequestBody DeleteSubjectReq req) {
     subjectService.deleteSubject(req);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.success(null));
   }
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import sh4re_v2.sh4re_v2.common.ApiResponse;
 import sh4re_v2.sh4re_v2.dto.unit.CreateUnitResponse;
 import sh4re_v2.sh4re_v2.dto.unit.createUnit.CreateUnitReq;
 import sh4re_v2.sh4re_v2.dto.unit.deleteUnit.DeleteUnitReq;
@@ -29,33 +30,36 @@ public class UnitController {
   private final UnitService unitService;
 
   @GetMapping
-  public ResponseEntity<GetAllUnitsRes> getAllUnitsBySubjectId(@RequestParam Long subjectId) {
+  public ResponseEntity<ApiResponse<GetAllUnitsRes>> getAllUnitsBySubjectId(@RequestParam(required = true) Long subjectId) {
+    if (subjectId == null) {
+      throw new IllegalArgumentException("subjectId parameter is required");
+    }
     GetAllUnitsRes response = unitService.getAllUnitsBySubjectId(subjectId);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<GetUnitRes> getUnit(@PathVariable Long id) {
+  public ResponseEntity<ApiResponse<GetUnitRes>> getUnit(@PathVariable Long id) {
     GetUnitRes response = unitService.getUnit(id);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   @PostMapping
-  public ResponseEntity<CreateUnitResponse> createUnit(@Valid @RequestBody CreateUnitReq req) {
+  public ResponseEntity<ApiResponse<CreateUnitResponse>> createUnit(@Valid @RequestBody CreateUnitReq req) {
     CreateUnitResponse response = unitService.createUnit(req);
     return ResponseEntity.created(URI.create("/api/v1/units/" + response.id()))
-        .body(response);
+        .body(ApiResponse.success(response));
   }
 
   @PatchMapping
-  public ResponseEntity<Void> updateUnit(@Valid @RequestBody UpdateUnitReq req) {
+  public ResponseEntity<ApiResponse<Void>> updateUnit(@Valid @RequestBody UpdateUnitReq req) {
     unitService.updateUnit(req);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.success(null));
   }
 
   @DeleteMapping
-  public ResponseEntity<Void> deleteUnit(@Valid @RequestBody DeleteUnitReq req) {
+  public ResponseEntity<ApiResponse<Void>> deleteUnit(@Valid @RequestBody DeleteUnitReq req) {
     unitService.deleteUnit(req);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.success(null));
   }
 }
