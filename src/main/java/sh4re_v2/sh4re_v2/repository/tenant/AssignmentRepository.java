@@ -10,8 +10,9 @@ import sh4re_v2.sh4re_v2.domain.tenant.Subject;
 @Repository
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
   @Query("SELECT a FROM Assignment a " +
-      "JOIN FETCH a.unit " +
-      "JOIN FETCH a.subject " +
+      "JOIN FETCH a.unit u " +
+      "JOIN FETCH u.subject " +   // unit.subject까지 fetch
+      "JOIN FETCH a.subject " +   // Assignment.subject도 fetch
       "WHERE a.subject = :subject")
   List<Assignment> findAllBySubject(Subject subject);
   List<Assignment> findAllByUserId(Long userId);
