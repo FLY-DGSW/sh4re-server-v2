@@ -41,7 +41,7 @@ public class SubjectService {
 
   public boolean canAccessSubject(Subject subject, User user) {
     if(user.getRole() == Role.TEACHER || user.getRole() == Role.ADMIN) return true;
-    if(subject.getUserId().equals(user.getId())) return true;
+    if(subject.getAuthorId().equals(user.getId())) return true;
     List<ClassPlacement> classPlacements = classPlacementService.findAllByUserId(user.getId());
     for(ClassPlacement classPlacement : classPlacements) {
       if(subject.getGrade().equals(classPlacement.getGrade()) && subject.getClassNumber().equals(classPlacement.getClassNumber()) && subject.getSchoolYear().equals(classPlacement.getSchoolYear())) {
@@ -81,7 +81,7 @@ public class SubjectService {
     Optional<Subject> subjectOpt = this.findById(req.id());
     if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
     Subject subject = subjectOpt.get();
-    if(!subject.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    if(!subject.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     Subject newSubject = req.toEntity(subject);
     this.save(newSubject);
   }
@@ -91,7 +91,20 @@ public class SubjectService {
     Optional<Subject> subjectOpt = this.findById(req.id());
     if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
     Subject subject = subjectOpt.get();
-    if(!subject.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    if(!subject.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     this.deleteById(req.id());
+  }
+
+  public Subject getSubjectOrElseThrow(Long subjectId) {
+    User user = holder.current();
+    Optional<Subject> subjectOpt = this.findById(subjectId);
+    if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
+    Subject subject = subjectOpt.get();
+
+    if(!this.canAccessSubject(subject, user)) {
+      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    }
+
+    return subject;
   }
 }

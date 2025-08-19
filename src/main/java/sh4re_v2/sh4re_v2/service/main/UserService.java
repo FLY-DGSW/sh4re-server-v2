@@ -10,8 +10,10 @@ import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.domain.tenant.ClassPlacement;
 import sh4re_v2.sh4re_v2.dto.user.getMyInfo.GetMyInfoRes;
 import sh4re_v2.sh4re_v2.dto.user.setTheme.SetThemeReq;
+import sh4re_v2.sh4re_v2.exception.exception.UserException;
 import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.AuthException;
+import sh4re_v2.sh4re_v2.exception.status_code.UserStatusCode;
 import sh4re_v2.sh4re_v2.repository.main.UserRepository;
 import sh4re_v2.sh4re_v2.service.tenant.ClassPlacementService;
 
@@ -55,5 +57,11 @@ public class UserService {
   public void validateUsername(String username) {
     boolean isUsernameExist = findByUsername(username).isPresent();
     if(isUsernameExist) throw AuthException.of(AuthStatusCode.ALREADY_EXISTS_USERNAME);
+  }
+
+  public User getUserOrElseThrow(Long userId) {
+    Optional<User> authorOpt = this.findById(userId);
+    if(authorOpt.isEmpty()) throw UserException.of(UserStatusCode.USER_NOT_FOUND);
+    return authorOpt.get();
   }
 }

@@ -44,13 +44,13 @@ public class UnitService {
     return unitRepository.findAllBySubjectIdOrderByOrderIndex(subjectId);
   }
 
-  public List<Unit> findAllByUserId(Long userId) {
-    return unitRepository.findAllByUserId(userId);
+  public List<Unit> findAllByAuthorId(Long authorId) {
+    return unitRepository.findAllByAuthorId(authorId);
   }
 
   public boolean canAccessUnit(Unit unit, User user) {
     if(user.getRole() == Role.TEACHER || user.getRole() == Role.ADMIN) return true;
-    if(unit.getUserId().equals(user.getId())) return true;
+    if(unit.getAuthorId().equals(user.getId())) return true;
     return subjectService.canAccessSubject(unit.getSubject(), user);
   }
 
@@ -73,7 +73,7 @@ public class UnitService {
         .description(description)
         .orderIndex(orderIndex)
         .subject(subject)
-        .userId(user.getId())
+        .authorId(user.getId())
         .build();
     
     return this.save(unit);
@@ -85,7 +85,7 @@ public class UnitService {
     if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
     Unit unit = unitOpt.get();
     
-    if(!unit.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    if(!unit.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     
     unit.setTitle(title);
     unit.setDescription(description);
@@ -100,7 +100,7 @@ public class UnitService {
     if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
     Unit unit = unitOpt.get();
     
-    if(!unit.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    if(!unit.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     
     this.deleteById(id);
   }
@@ -153,5 +153,14 @@ public class UnitService {
 
   public void deleteUnit(DeleteUnitReq req) {
     this.deleteUnit(req.id());
+  }
+
+  public Unit getUnitOrElseThrow(Long unitId) {
+    Optional<Unit> unitOpt = this.findById(unitId);
+    if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
+    Unit unit = unitOpt.get();
+
+    if(!unit.getSubject().getId().equals(unitId)) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
+    return unit;
   }
 }
