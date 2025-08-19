@@ -35,5 +35,5 @@ public class Unit extends Base {
   private Subject subject;
 
   @NotNull
-  private Long userId;
+  private Long authorId;
 }

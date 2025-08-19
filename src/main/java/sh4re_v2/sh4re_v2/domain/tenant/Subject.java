@@ -32,5 +32,5 @@ public class Subject extends Base {
   private Integer classNumber;
 
   @NotNull
-  private Long userId;
+  private Long authorId;
 }
