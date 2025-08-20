@@ -15,6 +15,7 @@ public record GetAllHandoutsRes(
 
     List<HandoutsByUnit> handoutsPerUnit = groupedByUnit.entrySet().stream()
         .map(entry -> new HandoutsByUnit(entry.getKey(), entry.getValue()))
+        .sorted(java.util.Comparator.comparing(h -> h.unit().getOrderIndex()))
         .toList();
     return new GetAllHandoutsRes(handoutsPerUnit);
   }
