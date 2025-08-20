@@ -106,16 +106,8 @@ public class UnitService {
   }
 
   public GetAllUnitsRes getAllUnitsBySubjectId(Long subjectId) {
-    User user = holder.current();
-    Optional<Subject> subjectOpt = subjectService.findById(subjectId);
-    if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
-    Subject subject = subjectOpt.get();
-    
-    if(!subjectService.canAccessSubject(subject, user)) {
-      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    }
-    
-    List<Unit> units = this.findAllBySubjectId(subjectId);
+    Subject subject = subjectService.getSubjectOrElseThrow(subjectId);
+    List<Unit> units = this.findAllBySubjectId(subject.getId());
     return new GetAllUnitsRes(units);
   }
 

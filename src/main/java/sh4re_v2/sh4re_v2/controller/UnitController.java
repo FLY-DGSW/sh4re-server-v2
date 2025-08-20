@@ -31,9 +31,6 @@ public class UnitController {
 
   @GetMapping
   public ResponseEntity<ApiResponse<GetAllUnitsRes>> getAllUnitsBySubjectId(@RequestParam(required = true) Long subjectId) {
-    if (subjectId == null) {
-      throw new IllegalArgumentException("subjectId parameter is required");
-    }
     GetAllUnitsRes response = unitService.getAllUnitsBySubjectId(subjectId);
     return ResponseEntity.ok(ApiResponse.success(response));
   }

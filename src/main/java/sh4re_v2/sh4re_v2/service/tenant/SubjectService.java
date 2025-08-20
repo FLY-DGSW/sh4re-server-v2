@@ -95,7 +95,7 @@ public class SubjectService {
     this.deleteById(req.id());
   }
 
-  public Subject getSubjectOrElseThrow(Long subjectId) {
+  public Subject getSubjectOrElseThrow(@NotNull Long subjectId) {
     User user = holder.current();
     Optional<Subject> subjectOpt = this.findById(subjectId);
     if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
