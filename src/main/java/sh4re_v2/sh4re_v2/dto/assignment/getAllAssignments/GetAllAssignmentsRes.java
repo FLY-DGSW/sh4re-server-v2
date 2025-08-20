@@ -15,6 +15,7 @@ public record GetAllAssignmentsRes(
 
     List<AssignmentsByUnit> assignmentsPerUnit = groupedByUnit.entrySet().stream()
         .map(entry -> new AssignmentsByUnit(entry.getKey(), entry.getValue()))
+        .sorted(java.util.Comparator.comparing(a -> a.unit().getOrderIndex()))
         .toList();
     return new GetAllAssignmentsRes(assignmentsPerUnit);
   }
