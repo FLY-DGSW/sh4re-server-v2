@@ -17,36 +17,29 @@ public record GetAllCodesRes(
 record CodeDto(
     Long id,
     String title,
-    String authorName,
+    User author,
     String language,
     String code,
     Long likeCount,
-    String className,
     String assignmentTitle,
     String createdAt,
     String updatedAt
 ) {
   public static CodeDto from(Code code, Long likeCount, UserService userService) {
-    String className = code.getClassPlacement() != null 
-        ? code.getClassPlacement().getGrade() + "학년 " + code.getClassPlacement().getClassNumber() + "반"
-        : "";
-    
     String assignmentTitle = code.getAssignment() != null 
         ? code.getAssignment().getTitle() 
         : "";
     
-    String authorName = userService.findById(code.getAuthorId())
-        .map(User::getName)
-        .orElse("Unknown");
+    User author = userService.findById(code.getAuthorId())
+        .orElse(null);
         
     return new CodeDto(
         code.getId(),
         code.getTitle(),
-        authorName,
+        author,
         code.getLanguage(),
         code.getCode(),
         likeCount,
-        className,
         assignmentTitle,
         code.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
         code.getUpdatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)

@@ -16,6 +16,8 @@ import sh4re_v2.sh4re_v2.dto.code.getAllCodes.GetAllCodesRes;
 import sh4re_v2.sh4re_v2.dto.code.getCode.GetCodeRes;
 import sh4re_v2.sh4re_v2.dto.code.updateCode.UpdateCodeReq;
 import sh4re_v2.sh4re_v2.dto.code.toggleLike.ToggleLikeRes;
+import sh4re_v2.sh4re_v2.exception.exception.AssignmentException;
+import sh4re_v2.sh4re_v2.exception.status_code.AssignmentStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.ClassPlacementStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.CodeStatusCode;
@@ -40,6 +42,7 @@ public class CodeService {
   private final OpenAIService openAIService;
   private final AssignmentService assignmentService;
   private final UserService userService;
+  private final SubjectService subjectService;
 
   public Code save(Code code) {
     return codeRepository.save(code);
@@ -58,7 +61,15 @@ public class CodeService {
     Optional<ClassPlacement> classPlacementOpt = classPlacementService.findLatestClassPlacementByUserId(user.getId());
     if(classPlacementOpt.isEmpty()) throw ClassPlacementException.of(ClassPlacementStatusCode.CLASS_PLACEMENT_NOT_FOUND);
     ClassPlacement classPlacement = classPlacementOpt.get();
-    List<Code> codes = codeRepository.findAllBySchoolYear(classPlacement.getSchoolYear());
+    
+    // 같은 반의 마감 기한이 지난 과제의 코드만 조회
+    List<Code> codes = codeRepository.findAllBySchoolYearAndGradeAndClassNumberWithExpiredAssignments(
+        classPlacement.getSchoolYear(),
+        classPlacement.getGrade(),
+        classPlacement.getClassNumber(),
+        java.time.LocalDateTime.now()
+    );
+    
     return GetAllCodesRes.from(codes, this::getLikeCount, userService);
   }
 
@@ -66,17 +77,17 @@ public class CodeService {
     User user = holder.current();
     
     // ClassPlacement 조회
-    Optional<ClassPlacement> classPlacementOpt = classPlacementService.findById(req.classPlacementId());
+    Optional<ClassPlacement> classPlacementOpt = classPlacementService.findLatestClassPlacementByUserId(user.getId());
     if(classPlacementOpt.isEmpty()) throw ClassPlacementException.of(ClassPlacementStatusCode.CLASS_PLACEMENT_NOT_FOUND);
     ClassPlacement classPlacement = classPlacementOpt.get();
-    
-    // Assignment 조회 (optional)
+
     Assignment assignment = null;
-    if(req.assignmentId() != null) {
+    if(req.assignmentId() != null){
+      // Assignment 조회
       Optional<Assignment> assignmentOpt = assignmentService.findById(req.assignmentId());
-      if(assignmentOpt.isPresent()) {
-        assignment = assignmentOpt.get();
-      }
+      if(assignmentOpt.isEmpty()) throw AssignmentException.of(AssignmentStatusCode.ASSIGNMENT_NOT_FOUND);
+      assignment = assignmentOpt.get();
+      if(!subjectService.canAccessSubject(assignment.getSubject(), user)) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     }
     
     String finalDescription = req.description();
@@ -85,12 +96,11 @@ public class CodeService {
     if (Boolean.TRUE.equals(req.useAiDescription())) {
       try {
         String assignmentTitle = assignment != null ? assignment.getTitle() : "";
-        String aiDescription = openAIService.generateCodeDescription(
-            req.code(), 
-            req.language(), 
+        finalDescription = openAIService.generateCodeDescription(
+            req.code(),
+            req.language(),
             assignmentTitle
         );
-        finalDescription = aiDescription;
       } catch (Exception e) {
         // AI 생성 실패시 기존 description 사용 (fallback은 OpenAIService에서 처리)
         finalDescription = req.description();
