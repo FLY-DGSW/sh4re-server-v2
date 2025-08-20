@@ -1,5 +1,6 @@
 package sh4re_v2.sh4re_v2.service.tenant;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -77,11 +78,7 @@ public class SubjectService {
   }
 
   public void updateSubject(UpdateSubjectReq req) {
-    User user = holder.current();
-    Optional<Subject> subjectOpt = this.findById(req.id());
-    if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
-    Subject subject = subjectOpt.get();
-    if(!subject.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    Subject subject = this.getSubjectOrElseThrow(req.id());
     Subject newSubject = req.toEntity(subject);
     this.save(newSubject);
   }

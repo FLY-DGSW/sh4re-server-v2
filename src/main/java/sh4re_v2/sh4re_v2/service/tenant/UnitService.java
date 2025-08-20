@@ -148,11 +148,15 @@ public class UnitService {
   }
 
   public Unit getUnitOrElseThrow(Long unitId) {
+    User user = holder.current();
     Optional<Unit> unitOpt = this.findById(unitId);
     if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
     Unit unit = unitOpt.get();
 
-    if(!unit.getSubject().getId().equals(unitId)) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
+    if(!subjectService.canAccessSubject(unit.getSubject(), user)) {
+      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    }
+
     return unit;
   }
 }
