@@ -118,6 +118,6 @@ public class SecurityPathConfig {
         new EndpointConfig("/api/v1/assignments", HttpMethod.POST, true, teacher),
         new EndpointConfig("/api/v1/assignments", HttpMethod.PATCH, true, teacher),
         new EndpointConfig("/api/v1/assignments", HttpMethod.DELETE, true, teacher),
-        new EndpointConfig("/api/v1/assignments/{assignmentId}", HttpMethod.GET, true),
+        new EndpointConfig("/api/v1/assignments/{id}", HttpMethod.GET, true),
     };
 }
