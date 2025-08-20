@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import sh4re_v2.sh4re_v2.common.ApiResponse;
 import sh4re_v2.sh4re_v2.dto.handout.CreateHandoutResponse;
 import sh4re_v2.sh4re_v2.dto.handout.createHandout.CreateHandoutReq;
 import sh4re_v2.sh4re_v2.dto.handout.getAllHandouts.GetAllHandoutsRes;
@@ -31,33 +32,33 @@ public class HandoutController {
   private final HandoutService handoutService;
 
   @GetMapping
-  public ResponseEntity<GetAllHandoutsRes> getAllHandouts(@NotNull(message = "과목 ID는 필수 입력 값입니다.") @RequestParam Long subjectId) {
+  public ResponseEntity<ApiResponse<GetAllHandoutsRes>> getAllHandouts(@NotNull(message = "과목 ID는 필수 입력 값입니다.") @RequestParam Long subjectId) {
     GetAllHandoutsRes response = handoutService.getAllHandouts(subjectId);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   @GetMapping("/{handoutId}")
-  public ResponseEntity<GetHandoutRes> getHandout(@PathVariable Long handoutId) {
+  public ResponseEntity<ApiResponse<GetHandoutRes>> getHandout(@PathVariable Long handoutId) {
     GetHandoutRes response = handoutService.getHandout(handoutId);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   @PostMapping
-  public ResponseEntity<CreateHandoutResponse> createHandout(@Valid @RequestBody CreateHandoutReq req) {
+  public ResponseEntity<ApiResponse<CreateHandoutResponse>> createHandout(@Valid @RequestBody CreateHandoutReq req) {
     CreateHandoutResponse response = handoutService.createHandout(req);
     return ResponseEntity.created(URI.create("/api/v1/handouts/" + response.id()))
-        .body(response);
+        .body(ApiResponse.success(response));
   }
 
   @PatchMapping("/{handoutId}")
-  public ResponseEntity<Void> updateHandout(@PathVariable Long handoutId, @Valid @RequestBody UpdateHandoutReq req) {
+  public ResponseEntity<ApiResponse<Void>> updateHandout(@PathVariable Long handoutId, @Valid @RequestBody UpdateHandoutReq req) {
     handoutService.updateHandout(handoutId, req);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.success(null));
   }
 
   @DeleteMapping("/{handoutId}")
-  public ResponseEntity<Void> deleteHandout(@PathVariable Long handoutId) {
+  public ResponseEntity<ApiResponse<Void>> deleteHandout(@PathVariable Long handoutId) {
     handoutService.deleteHandout(handoutId);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.success(null));
   }
 }

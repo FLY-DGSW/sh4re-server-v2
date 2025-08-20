@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import sh4re_v2.sh4re_v2.common.ApiResponse;
 import sh4re_v2.sh4re_v2.dto.assignment.CreateAssignmentResponse;
 import sh4re_v2.sh4re_v2.dto.assignment.createAssignment.CreateAssignmentReq;
 import sh4re_v2.sh4re_v2.dto.assignment.deleteAssignment.DeleteAssignmentReq;
@@ -29,33 +30,33 @@ public class AssignmentController {
   private final AssignmentService assignmentService;
 
   @GetMapping
-  public ResponseEntity<GetAllAssignmentsRes> getAllAssignmentsBySubjectId(@RequestParam Long subjectId) {
+  public ResponseEntity<ApiResponse<GetAllAssignmentsRes>> getAllAssignmentsBySubjectId(@RequestParam Long subjectId) {
     GetAllAssignmentsRes response = assignmentService.getAllAssignmentsBySubjectId(subjectId);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<GetAssignmentRes> getAssignment(@PathVariable Long id) {
+  public ResponseEntity<ApiResponse<GetAssignmentRes>> getAssignment(@PathVariable Long id) {
     GetAssignmentRes response = assignmentService.getAssignment(id);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   @PostMapping
-  public ResponseEntity<CreateAssignmentResponse> createAssignment(@Valid @RequestBody CreateAssignmentReq req) {
+  public ResponseEntity<ApiResponse<CreateAssignmentResponse>> createAssignment(@Valid @RequestBody CreateAssignmentReq req) {
     CreateAssignmentResponse response = assignmentService.createAssignment(req);
     return ResponseEntity.created(URI.create("/api/v1/assignments/" + response.id()))
-        .body(response);
+        .body(ApiResponse.success(response));
   }
 
   @PatchMapping
-  public ResponseEntity<Void> updateAssignment(@Valid @RequestBody UpdateAssignmentReq req) {
+  public ResponseEntity<ApiResponse<Void>> updateAssignment(@Valid @RequestBody UpdateAssignmentReq req) {
     assignmentService.updateAssignment(req);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.success(null));
   }
 
   @DeleteMapping
-  public ResponseEntity<Void> deleteAssignment(@Valid @RequestBody DeleteAssignmentReq req) {
+  public ResponseEntity<ApiResponse<Void>> deleteAssignment(@Valid @RequestBody DeleteAssignmentReq req) {
     assignmentService.deleteAssignment(req);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.success(null));
   }
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import sh4re_v2.sh4re_v2.common.ApiResponse;
 import sh4re_v2.sh4re_v2.dto.user.getMyInfo.GetMyInfoRes;
 import sh4re_v2.sh4re_v2.dto.user.setTheme.SetThemeReq;
 import sh4re_v2.sh4re_v2.service.main.UserService;
@@ -19,14 +20,14 @@ public class UserController {
   private final UserService userService;
 
   @GetMapping("/me")
-  public ResponseEntity<GetMyInfoRes> getMyInfo() {
+  public ResponseEntity<ApiResponse<GetMyInfoRes>> getMyInfo() {
     GetMyInfoRes response = userService.getMyInfo();
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   @PostMapping("/theme")
-  public ResponseEntity<Void> setTheme(@Valid @RequestBody SetThemeReq setThemeReq) {
+  public ResponseEntity<ApiResponse<Void>> setTheme(@Valid @RequestBody SetThemeReq setThemeReq) {
     userService.setTheme(setThemeReq);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.success(null));
   }
 }

@@ -44,13 +44,13 @@ public class UnitService {
     return unitRepository.findAllBySubjectIdOrderByOrderIndex(subjectId);
   }
 
-  public List<Unit> findAllByUserId(Long userId) {
-    return unitRepository.findAllByUserId(userId);
+  public List<Unit> findAllByAuthorId(Long authorId) {
+    return unitRepository.findAllByAuthorId(authorId);
   }
 
   public boolean canAccessUnit(Unit unit, User user) {
     if(user.getRole() == Role.TEACHER || user.getRole() == Role.ADMIN) return true;
-    if(unit.getUserId().equals(user.getId())) return true;
+    if(unit.getAuthorId().equals(user.getId())) return true;
     return subjectService.canAccessSubject(unit.getSubject(), user);
   }
 
@@ -73,7 +73,7 @@ public class UnitService {
         .description(description)
         .orderIndex(orderIndex)
         .subject(subject)
-        .userId(user.getId())
+        .authorId(user.getId())
         .build();
     
     return this.save(unit);
@@ -85,7 +85,7 @@ public class UnitService {
     if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
     Unit unit = unitOpt.get();
     
-    if(!unit.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    if(!unit.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     
     unit.setTitle(title);
     unit.setDescription(description);
@@ -100,22 +100,14 @@ public class UnitService {
     if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
     Unit unit = unitOpt.get();
     
-    if(!unit.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    if(!unit.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     
     this.deleteById(id);
   }
 
   public GetAllUnitsRes getAllUnitsBySubjectId(Long subjectId) {
-    User user = holder.current();
-    Optional<Subject> subjectOpt = subjectService.findById(subjectId);
-    if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
-    Subject subject = subjectOpt.get();
-    
-    if(!subjectService.canAccessSubject(subject, user)) {
-      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    }
-    
-    List<Unit> units = this.findAllBySubjectId(subjectId);
+    Subject subject = subjectService.getSubjectOrElseThrow(subjectId);
+    List<Unit> units = this.findAllBySubjectId(subject.getId());
     return new GetAllUnitsRes(units);
   }
 
@@ -153,5 +145,18 @@ public class UnitService {
 
   public void deleteUnit(DeleteUnitReq req) {
     this.deleteUnit(req.id());
+  }
+
+  public Unit getUnitOrElseThrow(Long unitId) {
+    User user = holder.current();
+    Optional<Unit> unitOpt = this.findById(unitId);
+    if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
+    Unit unit = unitOpt.get();
+
+    if(!subjectService.canAccessSubject(unit.getSubject(), user)) {
+      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    }
+
+    return unit;
   }
 }

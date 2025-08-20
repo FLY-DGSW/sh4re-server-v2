@@ -28,7 +28,7 @@ public record CreateSubjectReq(
     @NotNull(message = "연도는 필수 입력값 입니다.")
     int year
 ) {
-  public Subject toEntity(Long userId) {
+  public Subject toEntity(Long authorId) {
     return Subject
         .builder()
         .name(this.name())
@@ -36,7 +36,7 @@ public record CreateSubjectReq(
         .grade(this.grade)
         .schoolYear(this.year)
         .classNumber(this.classNumber)
-        .userId(userId)
+        .authorId(authorId)
         .build();
   }
 }

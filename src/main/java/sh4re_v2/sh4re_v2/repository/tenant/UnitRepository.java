@@ -8,6 +8,6 @@ import sh4re_v2.sh4re_v2.domain.tenant.Unit;
 @Repository
 public interface UnitRepository extends JpaRepository<Unit, Long> {
   List<Unit> findAllBySubjectIdOrderByOrderIndex(Long subjectId);
-  List<Unit> findAllByUserId(Long userId);
-  List<Unit> findAllBySubjectIdAndUserId(Long subjectId, Long userId);
+  List<Unit> findAllByAuthorId(Long authorId);
+  List<Unit> findAllBySubjectIdAndAuthorId(Long subjectId, Long authorId);
 }

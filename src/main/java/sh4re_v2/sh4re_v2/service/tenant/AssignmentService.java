@@ -45,8 +45,14 @@ public class AssignmentService {
     return assignmentRepository.findById(id);
   }
 
-  public List<Assignment> findAllBySubjectId(Long subjectId) {
-    return assignmentRepository.findAllBySubjectId(subjectId);
+  public GetAllAssignmentsRes findAllBySubjectId(Long subjectId) {
+    User user = holder.current();
+    Optional<Subject> subjectOpt = subjectService.findById(subjectId);
+    if (subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
+    Subject subject = subjectOpt.get();
+    if(!subjectService.canAccessSubject(subject, user)) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    List<Assignment> assignments = assignmentRepository.findAllBySubject(subject);
+    return GetAllAssignmentsRes.from(assignments);
   }
 
   public List<Assignment> findAllByUserId(Long userId) {
@@ -59,7 +65,6 @@ public class AssignmentService {
 
   public boolean canAccessAssignment(Assignment assignment, User user) {
     if(user.getRole() == Role.TEACHER || user.getRole() == Role.ADMIN) return true;
-    if(assignment.getUserId().equals(user.getId())) return true;
     return subjectService.canAccessSubject(assignment.getSubject(), user);
   }
 
@@ -139,17 +144,9 @@ public class AssignmentService {
   }
 
   public GetAllAssignmentsRes getAllAssignmentsBySubjectId(Long subjectId) {
-    User user = holder.current();
-    Optional<Subject> subjectOpt = subjectService.findById(subjectId);
-    if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
-    Subject subject = subjectOpt.get();
-    
-    if(!subjectService.canAccessSubject(subject, user)) {
-      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    }
-    
-    List<Assignment> assignments = this.findAllBySubjectId(subjectId);
-    return new GetAllAssignmentsRes(assignments);
+    Subject subject = subjectService.getSubjectOrElseThrow(subjectId);
+    List<Assignment> assignments = assignmentRepository.findAllBySubject(subject);
+    return GetAllAssignmentsRes.from(assignments);
   }
 
   public GetAssignmentRes getAssignment(Long id) {
@@ -192,19 +189,5 @@ public class AssignmentService {
 
   public void deleteAssignment(DeleteAssignmentReq req) {
     this.deleteAssignment(req.id());
-  }
-
-  public GetAllAssignmentsRes getAllAssignmentsByUnitId(Long unitId) {
-    User user = holder.current();
-    Optional<Unit> unitOpt = unitService.findById(unitId);
-    if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
-    Unit unit = unitOpt.get();
-    
-    if(!unitService.canAccessUnit(unit, user)) {
-      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    }
-    
-    List<Assignment> assignments = this.findAllByUnitId(unitId);
-    return new GetAllAssignmentsRes(assignments);
   }
 }
