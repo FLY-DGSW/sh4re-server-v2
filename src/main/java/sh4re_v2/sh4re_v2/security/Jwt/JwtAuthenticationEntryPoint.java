@@ -13,6 +13,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import sh4re_v2.sh4re_v2.common.ApiResponse;
 import sh4re_v2.sh4re_v2.dto.ErrorResponse;
 import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.StatusCode;
@@ -41,7 +42,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     ErrorResponse body = getBody(exception);
 
     // response에 생성한 body를 직렬화하여 저장한다.
-    objectMapper.writeValue(response.getOutputStream(), body);
+    objectMapper.writeValue(response.getOutputStream(), ApiResponse.error(body));
   }
 
   private static ErrorResponse getBody(Throwable exception) {
@@ -73,7 +74,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
       ErrorResponse body = ErrorResponse.of(
           AuthStatusCode.LOGIN_REQUIRED.getCode(),
           AuthStatusCode.LOGIN_REQUIRED.getMessage());
-      objectMapper.writeValue(response.getOutputStream(), body);
+      objectMapper.writeValue(response.getOutputStream(), ApiResponse.error(body));
       return true;
     }
     return false;
