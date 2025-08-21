@@ -31,9 +31,8 @@ public class ClassPlacementService {
 
     Optional<ClassPlacement> classPlacementOpt = classPlacementRepository.findTop1ByUserIdOrderBySchoolYearDesc(userId);
     if(classPlacementOpt.isEmpty()) throw ClassPlacementException.of(ClassPlacementStatusCode.CLASS_PLACEMENT_NOT_FOUND);
-    ClassPlacement classPlacement = classPlacementOpt.get();
 
-    return classPlacement;
+    return classPlacementOpt.get();
   }
 
   public List<ClassPlacement> findAllByUserId(Long userId) {
