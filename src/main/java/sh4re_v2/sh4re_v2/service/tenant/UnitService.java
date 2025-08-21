@@ -9,14 +9,9 @@ import sh4re_v2.sh4re_v2.common.UserAuthenticationHolder;
 import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.domain.tenant.Subject;
 import sh4re_v2.sh4re_v2.domain.tenant.Unit;
-import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
-import sh4re_v2.sh4re_v2.exception.status_code.SubjectStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.UnitStatusCode;
-import sh4re_v2.sh4re_v2.exception.exception.AuthException;
-import sh4re_v2.sh4re_v2.exception.exception.SubjectException;
 import sh4re_v2.sh4re_v2.exception.exception.UnitException;
 import sh4re_v2.sh4re_v2.repository.tenant.UnitRepository;
-import sh4re_v2.sh4re_v2.security.Role;
 import sh4re_v2.sh4re_v2.dto.unit.CreateUnitResponse;
 import sh4re_v2.sh4re_v2.dto.unit.createUnit.CreateUnitReq;
 import sh4re_v2.sh4re_v2.dto.unit.getAllUnits.GetAllUnitsRes;
@@ -57,10 +52,7 @@ public class UnitService {
 
   public Unit createUnit(Long subjectId, String title, String description, Integer orderIndex) {
     User user = holder.current();
-    Optional<Subject> subjectOpt = subjectService.findById(subjectId);
-    if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
-    Subject subject = subjectOpt.get();
-    
+    Subject subject = getSubjectById(subjectId);
     authorizationService.requireReadAccess(subject);
     
     Unit unit = Unit.builder()
@@ -92,7 +84,8 @@ public class UnitService {
   }
 
   public GetAllUnitsRes getAllUnitsBySubjectId(Long subjectId) {
-    Subject subject = subjectService.getSubjectOrElseThrow(subjectId);
+    Subject subject = getSubjectById(subjectId);
+    authorizationService.requireReadAccess(subject);
     List<Unit> units = this.findAllBySubjectId(subject.getId());
     return new GetAllUnitsRes(units);
   }
@@ -131,5 +124,14 @@ public class UnitService {
     Optional<Unit> unitOpt = this.findById(unitId);
     if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
     return unitOpt.get();
+  }
+  
+  private Subject getSubjectById(Long subjectId) {
+    if(subjectId == null) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
+    
+    Optional<Subject> subjectOpt = subjectService.findById(subjectId);
+    if(subjectOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
+    
+    return subjectOpt.get();
   }
 }

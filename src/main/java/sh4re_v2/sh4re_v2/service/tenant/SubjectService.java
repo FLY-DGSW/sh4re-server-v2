@@ -67,7 +67,8 @@ public class SubjectService {
   }
 
   public void updateSubject(UpdateSubjectReq req) {
-    Subject subject = this.getSubjectOrElseThrow(req.id());
+    Subject subject = getSubjectById(req.id());
+    // 권한 검사는 호출하는 쪽에서 처리
     Subject newSubject = req.toEntity(subject);
     this.save(newSubject);
   }
@@ -81,26 +82,12 @@ public class SubjectService {
     this.deleteById(req.id());
   }
 
-  public Subject getSubjectOrElseThrow(@NotNull Long subjectId) {
-    User user = holder.current();
+  private Subject getSubjectById(Long subjectId) {
     if(subjectId == null) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
     
     Optional<Subject> subjectOpt = this.findById(subjectId);
     if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
-    Subject subject = subjectOpt.get();
-
-    if(user.getRole() != Role.TEACHER && user.getRole() != Role.ADMIN) {
-      boolean hasAccess = classPlacementService.findAllByUserId(user.getId()).stream()
-        .anyMatch(cp -> 
-          subject.getGrade().equals(cp.getGrade()) && 
-          subject.getClassNumber().equals(cp.getClassNumber()) && 
-          subject.getSchoolYear().equals(cp.getSchoolYear())
-        );
-      if (!hasAccess) {
-        throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-      }
-    }
-
-    return subject;
+    
+    return subjectOpt.get();
   }
 }

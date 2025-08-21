@@ -11,12 +11,9 @@ import sh4re_v2.sh4re_v2.domain.main.User;
 import sh4re_v2.sh4re_v2.domain.tenant.Assignment;
 import sh4re_v2.sh4re_v2.domain.tenant.Subject;
 import sh4re_v2.sh4re_v2.exception.status_code.AssignmentStatusCode;
-import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.exception.AssignmentException;
-import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.security.AuthorizationService;
 import sh4re_v2.sh4re_v2.repository.tenant.AssignmentRepository;
-import sh4re_v2.sh4re_v2.security.Role;
 import sh4re_v2.sh4re_v2.dto.assignment.CreateAssignmentResponse;
 import sh4re_v2.sh4re_v2.dto.assignment.createAssignment.CreateAssignmentReq;
 import sh4re_v2.sh4re_v2.dto.assignment.getAllAssignments.GetAllAssignmentsRes;
@@ -77,7 +74,8 @@ public class AssignmentService {
   }
 
   public GetAllAssignmentsRes getAllAssignmentsBySubjectId(Long subjectId) {
-    Subject subject = subjectService.getSubjectOrElseThrow(subjectId);
+    Subject subject = getSubjectById(subjectId);
+    authorizationService.requireReadAccess(subject);
     List<Assignment> assignments = assignmentRepository.findAllBySubject(subject);
     return GetAllAssignmentsRes.from(assignments);
   }
@@ -93,7 +91,8 @@ public class AssignmentService {
     User user = holder.current();
 
     // Subject 조회
-    Subject subject = subjectService.getSubjectOrElseThrow(req.subjectId());
+    Subject subject = getSubjectById(req.subjectId());
+    authorizationService.requireReadAccess(subject);
 
     // Unit 조회 (required)
     Unit unit = unitService.getUnitById(req.unitId());
@@ -140,6 +139,15 @@ public class AssignmentService {
     if(assignmentOpt.isEmpty()) throw AssignmentException.of(AssignmentStatusCode.ASSIGNMENT_NOT_FOUND);
     
     return assignmentOpt.get();
+  }
+  
+  private Subject getSubjectById(Long subjectId) {
+    if(subjectId == null) throw AssignmentException.of(AssignmentStatusCode.ASSIGNMENT_NOT_FOUND);
+    
+    Optional<Subject> subjectOpt = subjectService.findById(subjectId);
+    if(subjectOpt.isEmpty()) throw AssignmentException.of(AssignmentStatusCode.ASSIGNMENT_NOT_FOUND);
+    
+    return subjectOpt.get();
   }
   
   private void validateUnitBelongsToSubject(Unit unit, Subject subject) {

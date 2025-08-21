@@ -14,9 +14,7 @@ import sh4re_v2.sh4re_v2.dto.handout.CreateHandoutResponse;
 import sh4re_v2.sh4re_v2.dto.handout.getAllHandouts.GetAllHandoutsRes;
 import sh4re_v2.sh4re_v2.dto.handout.getHandout.GetHandoutRes;
 import sh4re_v2.sh4re_v2.dto.handout.updateHandout.UpdateHandoutReq;
-import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.HandoutStatusCode;
-import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.exception.exception.HandoutException;
 import sh4re_v2.sh4re_v2.repository.tenant.HandoutRepository;
 import sh4re_v2.sh4re_v2.domain.tenant.Unit;
@@ -51,7 +49,8 @@ public class HandoutService {
   }
 
   public GetAllHandoutsRes getAllHandouts(Long subjectId) {
-    Subject subject = subjectService.getSubjectOrElseThrow(subjectId);
+    Subject subject = getSubjectById(subjectId);
+    authorizationService.requireReadAccess(subject);
     List<Handout> handouts = handoutRepository.findAllBySubject(subject);
     return GetAllHandoutsRes.from(handouts);
   }
@@ -60,7 +59,8 @@ public class HandoutService {
     User user = holder.current();
     
     // Subject 조회
-    Subject subject = subjectService.getSubjectOrElseThrow(req.subjectId());
+    Subject subject = getSubjectById(req.subjectId());
+    authorizationService.requireReadAccess(subject);
 
     // Unit 조회
     Unit unit = unitService.getUnitById(req.unitId());
@@ -88,7 +88,8 @@ public class HandoutService {
     authorizationService.requireWriteAccess(handout);
     
     // Subject 조회
-    Subject subject = subjectService.getSubjectOrElseThrow(req.subjectId());
+    Subject subject = getSubjectById(req.subjectId());
+    authorizationService.requireReadAccess(subject);
     
     // Unit 조회 (optional)
     Unit unit = getUnitOrNull(req.unitId());
@@ -104,6 +105,15 @@ public class HandoutService {
     Handout handout = getHandoutById(handoutId);
     authorizationService.requireWriteAccess(handout);
     this.deleteById(handoutId);
+  }
+  
+  private Subject getSubjectById(Long subjectId) {
+    if(subjectId == null) throw HandoutException.of(HandoutStatusCode.HANDOUT_NOT_FOUND);
+    
+    Optional<Subject> subjectOpt = subjectService.findById(subjectId);
+    if(subjectOpt.isEmpty()) throw HandoutException.of(HandoutStatusCode.HANDOUT_NOT_FOUND);
+    
+    return subjectOpt.get();
   }
   
   private Unit getUnitOrNull(Long unitId) {
