@@ -26,10 +26,12 @@ import sh4re_v2.sh4re_v2.exception.exception.ClassPlacementException;
 import sh4re_v2.sh4re_v2.exception.exception.CodeException;
 import sh4re_v2.sh4re_v2.repository.tenant.CodeRepository;
 import sh4re_v2.sh4re_v2.repository.tenant.CodeLikeRepository;
+import sh4re_v2.sh4re_v2.security.Role;
 import sh4re_v2.sh4re_v2.service.main.OpenAIService;
 import sh4re_v2.sh4re_v2.domain.tenant.Assignment;
 import sh4re_v2.sh4re_v2.service.tenant.AssignmentService;
 import sh4re_v2.sh4re_v2.service.main.UserService;
+import sh4re_v2.sh4re_v2.security.AuthorizationService;
 
 @Service
 @Transactional(transactionManager = "tenantTransactionManager")
@@ -43,6 +45,7 @@ public class CodeService {
   private final AssignmentService assignmentService;
   private final UserService userService;
   private final SubjectService subjectService;
+  private final AuthorizationService authorizationService;
 
   public Code save(Code code) {
     return codeRepository.save(code);
@@ -77,9 +80,7 @@ public class CodeService {
     User user = holder.current();
     
     // ClassPlacement 조회
-    Optional<ClassPlacement> classPlacementOpt = classPlacementService.findLatestClassPlacementByUserId(user.getId());
-    if(classPlacementOpt.isEmpty()) throw ClassPlacementException.of(ClassPlacementStatusCode.CLASS_PLACEMENT_NOT_FOUND);
-    ClassPlacement classPlacement = classPlacementOpt.get();
+    ClassPlacement classPlacement = classPlacementService.findLatestClassPlacementByUserIdOrElseThrow(user.getId());
 
     Assignment assignment = null;
     if(req.assignmentId() != null){
@@ -87,7 +88,7 @@ public class CodeService {
       Optional<Assignment> assignmentOpt = assignmentService.findById(req.assignmentId());
       if(assignmentOpt.isEmpty()) throw AssignmentException.of(AssignmentStatusCode.ASSIGNMENT_NOT_FOUND);
       assignment = assignmentOpt.get();
-      if(!subjectService.canAccessSubject(assignment.getSubject(), user)) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+      if(!authorizationService.canAccessSubject(assignment.getSubject())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
     }
     
     String finalDescription = req.description();
@@ -115,54 +116,31 @@ public class CodeService {
 
   public GetCodeRes getCode(Long id) {
     User user = holder.current();
-    Optional<Code> codeOpt = this.findById(id);
-    if(codeOpt.isEmpty()) throw CodeException.of(CodeStatusCode.CODE_NOT_FOUND);
-    Code code = codeOpt.get();
+    Code code = getCodeById(id);
+    authorizationService.requireReadAccess(code);
     Long likeCount = getLikeCount(id);
     boolean isLikedByUser = isLikedByUser(id, user.getId());
     return GetCodeRes.from(code, likeCount, isLikedByUser, userService);
   }
 
-  public void updateCode(Long id, UpdateCodeReq req) {
-    User user = holder.current();
-    Optional<Code> codeOpt = this.findById(id);
-    if(codeOpt.isEmpty()) throw CodeException.of(CodeStatusCode.CODE_NOT_FOUND);
-    Code code = codeOpt.get();
-    if(!code.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    
-    // ClassPlacement 조회
-    Optional<ClassPlacement> classPlacementOpt = classPlacementService.findById(req.classPlacementId());
-    if(classPlacementOpt.isEmpty()) throw ClassPlacementException.of(ClassPlacementStatusCode.CLASS_PLACEMENT_NOT_FOUND);
-    ClassPlacement classPlacement = classPlacementOpt.get();
-    
-    // Assignment 조회 (optional)
-    Assignment assignment = null;
-    if(req.assignmentId() != null) {
-      Optional<Assignment> assignmentOpt = assignmentService.findById(req.assignmentId());
-      if(assignmentOpt.isPresent()) {
-        assignment = assignmentOpt.get();
-      }
-    }
-    
+  public void updateCode(Long codeId, UpdateCodeReq req) {
+    Code code = getCodeById(codeId);
+    authorizationService.requireWriteAccess(code);
+
     Code newCode = req.toEntity(code);
-    newCode.setClassPlacement(classPlacement);
-    newCode.setAssignment(assignment);
     this.save(newCode);
   }
 
-  public void deleteCode(Long id) {
-    User user = holder.current();
-    Optional<Code> codeOpt = this.findById(id);
-    if(codeOpt.isEmpty()) throw CodeException.of(CodeStatusCode.CODE_NOT_FOUND);
-    Code code = codeOpt.get();
-    if(!code.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    this.deleteById(id);
+  public void deleteCode(Long codeId) {
+    Code code = getCodeById(codeId);
+    authorizationService.requireWriteAccess(code);
+    this.deleteById(codeId);
   }
 
   public ToggleLikeRes toggleLike(Long codeId) {
     User user = holder.current();
-    Optional<Code> codeOpt = this.findById(codeId);
-    if(codeOpt.isEmpty()) throw CodeException.of(CodeStatusCode.CODE_NOT_FOUND);
+    Code code = getCodeById(codeId);
+    authorizationService.requireReadAccess(code);
     
     Optional<CodeLike> codeLikeOpt = codeLikeRepository.findByCodeIdAndUserId(codeId, user.getId());
     boolean isLiked;
@@ -190,4 +168,13 @@ public class CodeService {
   public boolean isLikedByUser(Long codeId, Long userId) {
     return codeLikeRepository.existsByCodeIdAndUserId(codeId, userId);
   }
+
+  private Code getCodeById(Long codeId) {
+    if(codeId == null) throw CodeException.of(CodeStatusCode.CODE_NOT_FOUND);
+    Optional<Code> codeOpt = this.findById(codeId);
+    if(codeOpt.isEmpty()) throw CodeException.of(CodeStatusCode.CODE_NOT_FOUND);
+    return codeOpt.get();
+  }
+
+
 }

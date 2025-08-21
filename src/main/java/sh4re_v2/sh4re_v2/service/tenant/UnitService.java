@@ -23,6 +23,7 @@ import sh4re_v2.sh4re_v2.dto.unit.getAllUnits.GetAllUnitsRes;
 import sh4re_v2.sh4re_v2.dto.unit.getUnit.GetUnitRes;
 import sh4re_v2.sh4re_v2.dto.unit.updateUnit.UpdateUnitReq;
 import sh4re_v2.sh4re_v2.dto.unit.deleteUnit.DeleteUnitReq;
+import sh4re_v2.sh4re_v2.security.AuthorizationService;
 
 @Service
 @Transactional(transactionManager = "tenantTransactionManager")
@@ -31,6 +32,7 @@ public class UnitService {
   private final UnitRepository unitRepository;
   private final UserAuthenticationHolder holder;
   private final SubjectService subjectService;
+  private final AuthorizationService authorizationService;
 
   public Unit save(Unit unit) {
     return unitRepository.save(unit);
@@ -48,11 +50,6 @@ public class UnitService {
     return unitRepository.findAllByAuthorId(authorId);
   }
 
-  public boolean canAccessUnit(Unit unit, User user) {
-    if(user.getRole() == Role.TEACHER || user.getRole() == Role.ADMIN) return true;
-    if(unit.getAuthorId().equals(user.getId())) return true;
-    return subjectService.canAccessSubject(unit.getSubject(), user);
-  }
 
   public void deleteById(Long id) {
     unitRepository.deleteById(id);
@@ -64,9 +61,7 @@ public class UnitService {
     if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
     Subject subject = subjectOpt.get();
     
-    if(!subjectService.canAccessSubject(subject, user)) {
-      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    }
+    authorizationService.requireReadAccess(subject);
     
     Unit unit = Unit.builder()
         .title(title)
@@ -80,12 +75,8 @@ public class UnitService {
   }
 
   public Unit updateUnit(Long id, String title, String description, Integer orderIndex) {
-    User user = holder.current();
-    Optional<Unit> unitOpt = this.findById(id);
-    if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
-    Unit unit = unitOpt.get();
-    
-    if(!unit.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    Unit unit = getUnitById(id);
+    authorizationService.requireWriteAccess(unit);
     
     unit.setTitle(title);
     unit.setDescription(description);
@@ -95,13 +86,8 @@ public class UnitService {
   }
 
   public void deleteUnit(Long id) {
-    User user = holder.current();
-    Optional<Unit> unitOpt = this.findById(id);
-    if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
-    Unit unit = unitOpt.get();
-    
-    if(!unit.getAuthorId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    
+    Unit unit = getUnitById(id);
+    authorizationService.requireWriteAccess(unit);
     this.deleteById(id);
   }
 
@@ -112,15 +98,8 @@ public class UnitService {
   }
 
   public GetUnitRes getUnit(Long id) {
-    User user = holder.current();
-    Optional<Unit> unitOpt = this.findById(id);
-    if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
-    Unit unit = unitOpt.get();
-    
-    if(!this.canAccessUnit(unit, user)) {
-      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    }
-    
+    Unit unit = getUnitById(id);
+    authorizationService.requireReadAccess(unit);
     return new GetUnitRes(unit);
   }
 
@@ -147,16 +126,10 @@ public class UnitService {
     this.deleteUnit(req.id());
   }
 
-  public Unit getUnitOrElseThrow(Long unitId) {
-    User user = holder.current();
+  public Unit getUnitById(Long unitId) {
+    if(unitId == null) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
     Optional<Unit> unitOpt = this.findById(unitId);
     if(unitOpt.isEmpty()) throw UnitException.of(UnitStatusCode.UNIT_NOT_FOUND);
-    Unit unit = unitOpt.get();
-
-    if(!subjectService.canAccessSubject(unit.getSubject(), user)) {
-      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    }
-
-    return unit;
+    return unitOpt.get();
   }
 }

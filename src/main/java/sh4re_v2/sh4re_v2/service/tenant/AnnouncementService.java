@@ -14,13 +14,12 @@ import sh4re_v2.sh4re_v2.dto.announcement.CreateAnnouncementResponse;
 import sh4re_v2.sh4re_v2.dto.announcement.getAllAnnouncements.GetAllAnnouncementsRes;
 import sh4re_v2.sh4re_v2.dto.announcement.getAnnouncement.GetAnnouncementRes;
 import sh4re_v2.sh4re_v2.dto.announcement.updateAnnouncement.UpdateAnnouncementReq;
-import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.ClassPlacementStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.AnnouncementStatusCode;
-import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.exception.exception.ClassPlacementException;
 import sh4re_v2.sh4re_v2.exception.exception.AnnouncementException;
 import sh4re_v2.sh4re_v2.repository.tenant.AnnouncementRepository;
+import sh4re_v2.sh4re_v2.security.AuthorizationService;
 
 @Service
 @Transactional(transactionManager = "tenantTransactionManager")
@@ -29,6 +28,7 @@ public class AnnouncementService {
   private final AnnouncementRepository announcementRepository;
   private final UserAuthenticationHolder holder;
   private final ClassPlacementService classPlacementService;
+  private final AuthorizationService authorizationService;
 
   public Announcement save(Announcement announcement) {
     return announcementRepository.save(announcement);
@@ -64,28 +64,27 @@ public class AnnouncementService {
   }
 
   public GetAnnouncementRes getAnnouncement(Long id) {
-    Optional<Announcement> announcementOpt = this.findById(id);
-    if(announcementOpt.isEmpty()) throw AnnouncementException.of(AnnouncementStatusCode.ANNOUNCEMENT_NOT_FOUND);
-    Announcement announcement = announcementOpt.get();
+    Announcement announcement = getAnnouncementById(id);
+    authorizationService.requireReadAccess(announcement);
     return GetAnnouncementRes.from(announcement);
   }
 
   public void updateAnnouncement(Long id, UpdateAnnouncementReq req) {
-    User user = holder.current();
-    Optional<Announcement> announcementOpt = this.findById(id);
-    if(announcementOpt.isEmpty()) throw AnnouncementException.of(AnnouncementStatusCode.ANNOUNCEMENT_NOT_FOUND);
-    Announcement announcement = announcementOpt.get();
-    if(!announcement.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    Announcement announcement = getAnnouncementById(id);
+    authorizationService.requireWriteAccess(announcement);
     Announcement newAnnouncement = req.toEntity(announcement);
     this.save(newAnnouncement);
   }
 
   public void deleteAnnouncement(Long id) {
-    User user = holder.current();
+    Announcement announcement = getAnnouncementById(id);
+    authorizationService.requireWriteAccess(announcement);
+    this.deleteById(id);
+  }
+  
+  private Announcement getAnnouncementById(Long id) {
     Optional<Announcement> announcementOpt = this.findById(id);
     if(announcementOpt.isEmpty()) throw AnnouncementException.of(AnnouncementStatusCode.ANNOUNCEMENT_NOT_FOUND);
-    Announcement announcement = announcementOpt.get();
-    if(!announcement.getUserId().equals(user.getId())) throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-    this.deleteById(id);
+    return announcementOpt.get();
   }
 }

@@ -40,17 +40,6 @@ public class SubjectService {
     return subjectRepository.findById(id);
   }
 
-  public boolean canAccessSubject(Subject subject, User user) {
-    if(user.getRole() == Role.TEACHER || user.getRole() == Role.ADMIN) return true;
-    if(subject.getAuthorId().equals(user.getId())) return true;
-    List<ClassPlacement> classPlacements = classPlacementService.findAllByUserId(user.getId());
-    for(ClassPlacement classPlacement : classPlacements) {
-      if(subject.getGrade().equals(classPlacement.getGrade()) && subject.getClassNumber().equals(classPlacement.getClassNumber()) && subject.getSchoolYear().equals(classPlacement.getSchoolYear())) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   public void deleteById(Long id) {
     subjectRepository.deleteById(id);
@@ -94,12 +83,22 @@ public class SubjectService {
 
   public Subject getSubjectOrElseThrow(@NotNull Long subjectId) {
     User user = holder.current();
+    if(subjectId == null) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
+    
     Optional<Subject> subjectOpt = this.findById(subjectId);
     if(subjectOpt.isEmpty()) throw SubjectException.of(SubjectStatusCode.SUBJECT_NOT_FOUND);
     Subject subject = subjectOpt.get();
 
-    if(!this.canAccessSubject(subject, user)) {
-      throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+    if(user.getRole() != Role.TEACHER && user.getRole() != Role.ADMIN) {
+      boolean hasAccess = classPlacementService.findAllByUserId(user.getId()).stream()
+        .anyMatch(cp -> 
+          subject.getGrade().equals(cp.getGrade()) && 
+          subject.getClassNumber().equals(cp.getClassNumber()) && 
+          subject.getSchoolYear().equals(cp.getSchoolYear())
+        );
+      if (!hasAccess) {
+        throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
+      }
     }
 
     return subject;
