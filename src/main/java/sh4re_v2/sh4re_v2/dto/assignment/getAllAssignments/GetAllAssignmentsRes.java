@@ -19,6 +19,7 @@ public record GetAllAssignmentsRes(
         .toList();
     return new GetAllAssignmentsRes(assignmentsPerUnit);
   }
+  
 
   public record AssignmentsByUnit(
       Unit unit,

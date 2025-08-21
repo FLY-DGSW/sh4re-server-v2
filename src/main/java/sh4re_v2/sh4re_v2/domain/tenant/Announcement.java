@@ -38,5 +38,5 @@ public class Announcement extends Base {
   private Integer classNumber;
 
   @NotNull
-  private Long userId;
+  private Long authorId;
 }

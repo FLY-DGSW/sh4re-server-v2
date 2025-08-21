@@ -15,6 +15,5 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
       "JOIN FETCH a.subject " +   // Assignment.subject도 fetch
       "WHERE a.subject = :subject")
   List<Assignment> findAllBySubject(Subject subject);
-  List<Assignment> findAllByUserId(Long userId);
   List<Assignment> findAllByUnitIdOrderByCreatedAtDesc(Long unitId);
 }

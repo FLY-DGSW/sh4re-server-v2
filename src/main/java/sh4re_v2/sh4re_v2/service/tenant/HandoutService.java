@@ -14,13 +14,12 @@ import sh4re_v2.sh4re_v2.dto.handout.CreateHandoutResponse;
 import sh4re_v2.sh4re_v2.dto.handout.getAllHandouts.GetAllHandoutsRes;
 import sh4re_v2.sh4re_v2.dto.handout.getHandout.GetHandoutRes;
 import sh4re_v2.sh4re_v2.dto.handout.updateHandout.UpdateHandoutReq;
-import sh4re_v2.sh4re_v2.exception.status_code.AuthStatusCode;
 import sh4re_v2.sh4re_v2.exception.status_code.HandoutStatusCode;
-import sh4re_v2.sh4re_v2.exception.exception.AuthException;
 import sh4re_v2.sh4re_v2.exception.exception.HandoutException;
 import sh4re_v2.sh4re_v2.repository.tenant.HandoutRepository;
 import sh4re_v2.sh4re_v2.domain.tenant.Unit;
 import sh4re_v2.sh4re_v2.service.main.UserService;
+import sh4re_v2.sh4re_v2.security.AuthorizationService;
 
 @Service
 @Transactional(transactionManager = "tenantTransactionManager")
@@ -31,6 +30,7 @@ public class HandoutService {
   private final SubjectService subjectService;
   private final UnitService unitService;
   private final UserService userService;
+  private final AuthorizationService authorizationService;
 
   public Handout save(Handout handout) {
     return handoutRepository.save(handout);
@@ -49,7 +49,8 @@ public class HandoutService {
   }
 
   public GetAllHandoutsRes getAllHandouts(Long subjectId) {
-    Subject subject = subjectService.getSubjectOrElseThrow(subjectId);
+    Subject subject = getSubjectById(subjectId);
+    authorizationService.requireReadAccess(subject);
     List<Handout> handouts = handoutRepository.findAllBySubject(subject);
     return GetAllHandoutsRes.from(handouts);
   }
@@ -58,10 +59,12 @@ public class HandoutService {
     User user = holder.current();
     
     // Subject 조회
-    Subject subject = subjectService.getSubjectOrElseThrow(req.subjectId());
+    Subject subject = getSubjectById(req.subjectId());
+    authorizationService.requireReadAccess(subject);
 
     // Unit 조회
-    Unit unit = unitService.getUnitOrElseThrow(req.unitId());
+    Unit unit = unitService.getUnitById(req.unitId());
+    authorizationService.requireReadAccess(unit);
     
     Handout newHandout = req.toEntity(user.getId(), subject, unit);
     this.save(newHandout);
@@ -70,7 +73,8 @@ public class HandoutService {
 
   public GetHandoutRes getHandout(Long id) {
     // handout 조회
-    Handout handout = getHandoutOrElseThrow(id);
+    Handout handout = getHandoutById(id);
+    authorizationService.requireReadAccess(handout);
     
     // 작성자 정보 조회
     User author = userService.getUserOrElseThrow(handout.getAuthorId());
@@ -80,19 +84,15 @@ public class HandoutService {
 
   public void updateHandout(Long handoutId, UpdateHandoutReq req) {
     // 아래 함수를 통해 존재하는지 확인하고 권한까지 검증
-    Handout handout = getHandoutOrElseThrow(handoutId, true);
+    Handout handout = getHandoutById(handoutId);
+    authorizationService.requireWriteAccess(handout);
     
     // Subject 조회
-    Subject subject = subjectService.getSubjectOrElseThrow(req.subjectId());
+    Subject subject = getSubjectById(req.subjectId());
+    authorizationService.requireReadAccess(subject);
     
     // Unit 조회 (optional)
-    Unit unit = null;
-    if(req.unitId() != null) {
-      Optional<Unit> unitOpt = unitService.findById(req.unitId());
-      if(unitOpt.isPresent()) {
-        unit = unitOpt.get();
-      }
-    }
+    Unit unit = getUnitOrNull(req.unitId());
     
     Handout updatedHandout = req.toEntity(handout);
     updatedHandout.setSubject(subject);
@@ -102,34 +102,29 @@ public class HandoutService {
 
   public void deleteHandout(Long handoutId) {
     // get하면서 존재하는지 확인, 권한 검증
-    getHandoutOrElseThrow(handoutId, true);
+    Handout handout = getHandoutById(handoutId);
+    authorizationService.requireWriteAccess(handout);
     this.deleteById(handoutId);
   }
-
-  public Handout getHandoutOrElseThrow(Long handoutId) {
-    User user = holder.current();
-    Optional<Handout> handoutOpt = this.findById(handoutId);
-    if (handoutOpt.isEmpty()) {
-      throw HandoutException.of(HandoutStatusCode.HANDOUT_NOT_FOUND);
-    }
-
-    return handoutOpt.get();
+  
+  private Subject getSubjectById(Long subjectId) {
+    if(subjectId == null) throw HandoutException.of(HandoutStatusCode.HANDOUT_NOT_FOUND);
+    
+    Optional<Subject> subjectOpt = subjectService.findById(subjectId);
+    if(subjectOpt.isEmpty()) throw HandoutException.of(HandoutStatusCode.HANDOUT_NOT_FOUND);
+    
+    return subjectOpt.get();
+  }
+  
+  private Unit getUnitOrNull(Long unitId) {
+    return unitId != null ? unitService.findById(unitId).orElse(null) : null;
   }
 
-  public Handout getHandoutOrElseThrow(Long handoutId, boolean withAuthorization) {
-    User user = holder.current();
+  private Handout getHandoutById(Long handoutId) {
     Optional<Handout> handoutOpt = this.findById(handoutId);
     if (handoutOpt.isEmpty()) {
       throw HandoutException.of(HandoutStatusCode.HANDOUT_NOT_FOUND);
     }
-    Handout handout = handoutOpt.get();
-
-    if(withAuthorization) {
-      if(!subjectService.canAccessSubject(handout.getSubject(), user)) {
-        throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
-      }
-    }
-
-    return handout;
+    return handoutOpt.get();
   }
 }

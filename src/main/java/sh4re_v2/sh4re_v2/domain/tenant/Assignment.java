@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -45,8 +46,14 @@ public class Assignment extends Base {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "unit_id")
+  @NotNull
   private Unit unit;
 
   @NotNull
-  private Long userId;
+  private Long authorId;
+
+  @Transient
+  public boolean isOverdue() {
+    return deadline != null && deadline.isBefore(LocalDateTime.now());
+  }
 }

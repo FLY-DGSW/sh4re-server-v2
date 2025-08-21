@@ -8,9 +8,7 @@ public record UpdateCodeReq(
     @NotBlank String title,
     @NotBlank String language,
     String description,
-    @NotBlank String code,
-    @NotNull Long classPlacementId,
-    Long assignmentId
+    @NotBlank String code
 ) {
   public Code toEntity(Code existingCode) {
     existingCode.setTitle(title);
