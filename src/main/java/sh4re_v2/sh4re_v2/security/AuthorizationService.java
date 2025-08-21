@@ -137,14 +137,12 @@ public class AuthorizationService {
         if (subject.getAuthorId().equals(user.getId())) return true;
         
         List<ClassPlacement> classPlacements = classPlacementService.findAllByUserId(user.getId());
-        for(ClassPlacement cp : classPlacements) {
-            if (subject.getGrade().equals(cp.getGrade()) && 
-                subject.getClassNumber().equals(cp.getClassNumber()) && 
-                subject.getSchoolYear().equals(cp.getSchoolYear())) {
-                return true;
-            }
-        }
-        return false;
+        return classPlacements.stream()
+                .anyMatch(cp -> 
+                    subject.getGrade().equals(cp.getGrade()) && 
+                    subject.getClassNumber().equals(cp.getClassNumber()) && 
+                    subject.getSchoolYear().equals(cp.getSchoolYear())
+                );
     }
     
     private boolean canAccessAssignment(Assignment assignment, User user) {
@@ -181,14 +179,12 @@ public class AuthorizationService {
         
         // 같은 학년/반 학생들은 공지사항 읽기 가능
         List<ClassPlacement> classPlacements = classPlacementService.findAllByUserId(user.getId());
-        for(ClassPlacement cp : classPlacements) {
-            if (announcement.getGrade().equals(cp.getGrade()) && 
-                announcement.getClassNumber().equals(cp.getClassNumber()) && 
-                announcement.getSchoolYear().equals(cp.getSchoolYear())) {
-                return true;
-            }
-        }
-        return false;
+        return classPlacements.stream()
+                .anyMatch(cp -> 
+                    announcement.getGrade().equals(cp.getGrade()) && 
+                    announcement.getClassNumber().equals(cp.getClassNumber()) && 
+                    announcement.getSchoolYear().equals(cp.getSchoolYear())
+                );
     }
     
     // =============== Public 권한 체크 메소드들 ===============
