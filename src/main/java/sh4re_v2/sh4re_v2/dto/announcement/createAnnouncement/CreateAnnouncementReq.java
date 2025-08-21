@@ -27,7 +27,7 @@ public record CreateAnnouncementReq(
     @NotNull(message = "대상은 필수 입력값 입니다.")
     Target target
 ) {
-  public Announcement toEntity(Long userId) {
+  public Announcement toEntity(Long authorId) {
     return Announcement
         .builder()
         .label(this.label())
@@ -37,7 +37,7 @@ public record CreateAnnouncementReq(
         .grade(this.target.grade())
         .schoolYear(this.target.year())
         .classNumber(this.target.classNumber())
-        .userId(userId)
+        .authorId(authorId)
         .build();
   }
 

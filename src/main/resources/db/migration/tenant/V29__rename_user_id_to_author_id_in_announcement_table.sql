@@ -1,0 +1,1 @@
+ALTER TABLE announcement RENAME COLUMN user_id TO author_id;

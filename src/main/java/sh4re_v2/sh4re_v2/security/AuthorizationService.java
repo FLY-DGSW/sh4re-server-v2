@@ -122,7 +122,7 @@ public class AuthorizationService {
     public void requireWriteAccess(Announcement announcement) {
         requireReadAccess(announcement);
         User user = holder.current();
-        if (!announcement.getUserId().equals(user.getId()) && !isAdminOrTeacher(user)) {
+        if (!announcement.getAuthorId().equals(user.getId()) && !isAdminOrTeacher(user)) {
             throw AuthException.of(AuthStatusCode.PERMISSION_DENIED);
         }
     }
@@ -175,7 +175,7 @@ public class AuthorizationService {
     
     private boolean canAccessAnnouncement(Announcement announcement, User user) {
         if (isAdminOrTeacher(user)) return true;
-        if (announcement.getUserId().equals(user.getId())) return true;
+        if (announcement.getAuthorId().equals(user.getId())) return true;
         
         // 같은 학년/반 학생들은 공지사항 읽기 가능
         List<ClassPlacement> classPlacements = classPlacementService.findAllByUserId(user.getId());
