@@ -56,6 +56,9 @@ public class AssignmentService {
     Unit unit = unitService.getUnitById(unitId);
     authorizationService.requireReadAccess(unit);
     
+    // Unit이 해당 Assignment의 Subject에 속하는지 검증
+    validateUnitBelongsToSubject(unit, assignment.getSubject());
+    
     assignment.setTitle(title);
     assignment.setDescription(description);
     assignment.setInputExample(inputExample);
@@ -95,6 +98,9 @@ public class AssignmentService {
     // Unit 조회 (required)
     Unit unit = unitService.getUnitById(req.unitId());
     authorizationService.requireReadAccess(unit);
+    
+    // Unit이 해당 Subject에 속하는지 검증
+    validateUnitBelongsToSubject(unit, subject);
 
     Assignment assignment = Assignment.builder()
         .title(req.title())
@@ -134,6 +140,12 @@ public class AssignmentService {
     if(assignmentOpt.isEmpty()) throw AssignmentException.of(AssignmentStatusCode.ASSIGNMENT_NOT_FOUND);
     
     return assignmentOpt.get();
+  }
+  
+  private void validateUnitBelongsToSubject(Unit unit, Subject subject) {
+    if (!unit.getSubject().getId().equals(subject.getId())) {
+      throw AssignmentException.of(AssignmentStatusCode.ASSIGNMENT_NOT_FOUND); // 적절한 상태 코드로 변경 필요
+    }
   }
   
 }
