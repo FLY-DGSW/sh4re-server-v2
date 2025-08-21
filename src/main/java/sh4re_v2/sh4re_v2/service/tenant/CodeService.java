@@ -26,7 +26,6 @@ import sh4re_v2.sh4re_v2.exception.exception.ClassPlacementException;
 import sh4re_v2.sh4re_v2.exception.exception.CodeException;
 import sh4re_v2.sh4re_v2.repository.tenant.CodeRepository;
 import sh4re_v2.sh4re_v2.repository.tenant.CodeLikeRepository;
-import sh4re_v2.sh4re_v2.security.Role;
 import sh4re_v2.sh4re_v2.service.main.OpenAIService;
 import sh4re_v2.sh4re_v2.domain.tenant.Assignment;
 import sh4re_v2.sh4re_v2.service.tenant.AssignmentService;
@@ -73,7 +72,22 @@ public class CodeService {
         java.time.LocalDateTime.now()
     );
     
-    return GetAllCodesRes.from(codes, this::getLikeCount, userService);
+    // 필요한 데이터를 서비스 레이어에서 미리 조회
+    List<GetAllCodesRes.CodeWithDetails> codeDetails = codes.stream()
+        .map(code -> {
+          Long likeCount = getLikeCount(code.getId());
+          User author = userService.getUserOrElseThrow(code.getAuthorId());
+          ClassPlacement authorClass = classPlacementService.findLatestClassPlacementByUserIdOrElseThrow(code.getAuthorId());
+          return new GetAllCodesRes.CodeWithDetails(
+              code,
+              likeCount,
+              author,
+              authorClass
+          );
+        })
+        .toList();
+    
+    return GetAllCodesRes.from(codeDetails);
   }
 
   public CreateCodeResponse createCode(CreateCodeReq req) {
@@ -120,7 +134,12 @@ public class CodeService {
     authorizationService.requireReadAccess(code);
     Long likeCount = getLikeCount(id);
     boolean isLikedByUser = isLikedByUser(id, user.getId());
-    return GetCodeRes.from(code, likeCount, isLikedByUser, userService);
+    
+    // 작성자 정보 조회
+    User author = userService.getUserOrElseThrow(code.getAuthorId());
+    ClassPlacement authorClass = classPlacementService.findLatestClassPlacementByUserIdOrElseThrow(code.getAuthorId());
+    
+    return GetCodeRes.from(code, likeCount, isLikedByUser, author, authorClass);
   }
 
   public void updateCode(Long codeId, UpdateCodeReq req) {
