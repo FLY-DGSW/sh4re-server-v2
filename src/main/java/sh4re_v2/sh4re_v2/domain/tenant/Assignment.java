@@ -46,10 +46,11 @@ public class Assignment extends Base {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "unit_id")
+  @NotNull
   private Unit unit;
 
   @NotNull
-  private Long userId;
+  private Long authorId;
 
   @Transient
   public boolean isOverdue() {

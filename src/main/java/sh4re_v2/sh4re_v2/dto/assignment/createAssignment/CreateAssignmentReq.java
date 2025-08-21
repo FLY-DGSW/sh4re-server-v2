@@ -21,5 +21,6 @@ public record CreateAssignmentReq(
     @NotNull(message = "마감 기한은 필수 입력값입니다.")
     LocalDateTime deadline,
 
+    @NotNull(message = "단원 ID는 필수 입력값입니다.")
     Long unitId
 ) {}
